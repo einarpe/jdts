@@ -28,7 +28,7 @@ public class CopyStep extends Step
   
   private boolean truncate;
   
-  private ArrayList<TransColumn> transformations = new ArrayList<>();
+  private ArrayList<ExprColumn> exprColumns = new ArrayList<>();
   
   
   private CopyStep() { }
@@ -91,14 +91,14 @@ public class CopyStep extends Step
   private String getColumns(boolean source)
   {
     StringBuilder result = new StringBuilder(columns);
-    if (transformations.size() > 0)
+    if (exprColumns.size() > 0)
     {
       result.append(",");
-      for (int i = 0, l = transformations.size(); i < l; i++)
+      for (int i = 0, l = exprColumns.size(); i < l; i++)
       {
-        TransColumn tc = transformations.get(i);
+        ExprColumn tc = exprColumns.get(i);
         if (source)
-          result.append(tc.transform).append(" As ");
+          result.append(tc.expression).append(" As ");
         
         result.append(tc.columnName);
         if (i < l - 1)
@@ -204,10 +204,10 @@ public class CopyStep extends Step
       if (!child.getNodeName().equalsIgnoreCase("column"))
         continue;
       
-      TransColumn tc = new TransColumn();
+      ExprColumn tc = new ExprColumn();
       tc.columnName = child.getAttribute("name");
-      tc.transform = child.getAttribute("transform");
-      result.transformations.add(tc);
+      tc.expression = child.getAttribute("expression");
+      result.exprColumns.add(tc);
     }
     
     return result;
@@ -219,14 +219,14 @@ public class CopyStep extends Step
   }
   
   /** Kolumna z transformacją */
-  static class TransColumn
+  static class ExprColumn
   {
     public String columnName;
-    public String transform;
+    public String expression;
     
     public String toString()
     {
-      return String.format("%s As %s", transform, columnName);
+      return String.format("%s As %s", expression, columnName);
     }
   }
 
