@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dts>
+  
+  <connections>
+    <source
+      user="sa" password="sql2008#" 
+      driver="com.microsoft.sqlserver.jdbc.SQLServerDriver">jdbc:sqlserver://localhost:19570;databaseName=FORTUM</source>
+    <destination 
+      user="root" password="root"
+      driver="com.mysql.jdbc.Driver">jdbc:mysql://127.0.0.1:3306/fortum_tpa?characterEncoding=utf8</destination>
+  </connections>
+
+  <steps>
+    <copy 
+      table="common_customer" 
+      columns="Id,Code,Active,DateFrom,DateTo,ShortName,Name,FatherName,MotherName,FamilyName,BirthDate,CustomerTypeId,CustomerStatusId,FirstName,LastName,StreetCode,HouseNo,LocalNo,CorrespondenceName,CorrespondenceStreetCode,CorrespondenceHouseNo,CorrespondenceLocalNo,Nip,Regon,Pesel,TelephoneNo,TelephoneGsmNo,Fax,Email,DataProcessingConsent,MarketingProcessingConsent,Earchives,NotifyEmail,NotifySMS,DirectDebit,DataSourceId,Ibok,GroupCustomer1Id,GroupCustomer2Id,GroupCustomer3Id,CustomerConsultantId,Description" 
+      where="Active=1 and Ibok=1"
+      truncate="true" />
+
+    <copy 
+      table="common_estate" 
+      columns="Id,Code,Active,DateFrom,DateTo,ShortName,Name,StreetCode,HouseNo,LocalNo,ParcelNo,Area,TelephoneNo,FaxNo,ResidentsNo,Description,EstateTypeId,SectorId,CustomerCode,RecipientCode,PayerCode,EstateOwnerTypeId,GroupEstate1Id,GroupEstate2Id,GroupEstate3Id,ChangeReasonId,TariffCode,Longitude,Latitude" 
+      where="Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)"
+      truncate="true" />
+
+    <copy 
+      table="common_street" 
+      columns="Id,Code,Active,DateFrom,DateTo,StreetPrefixId,Name,City,PostCode,PostCity,Commune,District,County,Region,Country,Longitude,Latitude"
+      truncate="true" />
+
+    <copy 
+      table="common_streetprefix" 
+      columns="Id,Name,Description"
+      truncate="true" />
+
+    <copy 
+      table="common_unit" 
+      columns="Id,Name,Description"
+      truncate="true" />
+
+    <copy 
+      table="sale_invoiceheader" 
+      columns="Id,InvoiceBookId,SaleDate,IssueDate,PaymentDate,PaymentTypeId,CustomerId,CustomerCode,EstateCode,PayerId,PayerCode,RecipientId,RecipientCode,StreetId,HouseNo,LocalNo,CompanyBankId,BillingAlgorithmId,SettlementAlgorithmId,RegistryId,RegistryNo,DocumentNo,Year,Month,Type,Forecast,BarCode,Netto,Vat,Brutto,PriceType,ClearingAccount,CorrectionReason,AdditionalText,Fiscal,Accounted,Archivised,Printed,PrintDate,SourceInvoiceHeaderId"
+      truncate="true" />
+
+    <copy 
+      table="sale_invoiceposition" 
+      columns="Id,InvoiceHeaderId,SequenceNo,Printable,ServiceId,Price,Amount,VatRateId,VatRateValue,Netto,Vat,Brutto,VatDifference,CustomerCode,PayerCode,RecipientCode,RegistryId,TariffId,TariffToServiceId,SystemSymbol,IDWS,EstateId,EstateCode,PointId,PointCode,ReadoutId,StartDate,EndDate,PositionType,VatPaymentDateType,SourceInvoicePositionId,Description"
+      truncate="true"
+       />
+      
+    <copy 
+      table="network_readout" 
+      columns="Id,ObjectCode,IsValid,Consumption,Correction,ConsumptionSubmeter,ConsumptionCoaxial,ConsumptionAdded,ConsumptionMaster,ConsumptionMasterDivider,ConsumptionInvoice,ConsumptionTheoretical,DividerRatio,ReadoutTypeId,Status,PreviousReadoutId,MasterReadoutId,SourceReadoutId,MeterId,AverageMonthly,PowerUsageRatio,AverageTemperature,IsTakenToAverage,Description,ObjectId,ReadoutDate,Value1,Value2,Consumption1,Consumption2,ConsumptionBeforeCorrection,IsOverflow,DividerRatioValue,MeasureUnitId,CalculateUnitId,ParentCalculateUnitId,CalculatedReadoutId,CorrectedReadoutId"
+      where="ObjectCode in (select code from Network_Object where active=1 and code in (select objectCode from common_point where Active=1 and EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1))))"
+      truncate="true" />
+      
+    <copy 
+      table="network_object" 
+      columns="Id,Code,Active,DateFrom,DateTo,Symbol,Name,ParentObjectCode,ObjectTypeId,StreetCode,HouseNo,LocalNo,NetworkId,Longitude,Latitude,Kind,ObjectLocalizationId,FeesValue,Area,OwnerTypeId,Abonament,ClimaticZoneId,MeterKind,ChangeReasonId,DivideMeterPercent,MasterObjectCode,ParentDecreaseField,SourceObjectCode,CarrierTypeId,HeatNetTempId,HeatRegTempId,Description,IsSecondCounter,SMeterKind,DivideMeterTypeId,SDivideMeterTypeId,SDivideMeterPercent,SMasterObjectCode,SParentDecreaseField,HeatOutTempId,Seasonal,CalculatePower,CalculateArea,CalculateOther,MeasureUnitId,CalculateUnitId,UnitFactor"
+      where="Active=1  and code in (select objectCode from common_point where EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)))"
+      truncate="true" />
+
+    <copy 
+      table="network_meter" 
+      columns="Id,Code,Active,DateFrom,DateTo,ObjectCode,MeterTypeId,MeterDocumentTypeId,SerialNo,MeterStatusId,MeterOwnerId,LegalizationFrom,LegalizationTo,SealNo"
+      where="Active=1 and ObjectCode in (select objectCode from common_point where EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)))"
+      truncate="true">
+      <column name="Description" transform="right(_position2, 9)" />  
+    </copy>
+    
+    <copy 
+      table="network_metertype"
+      columns="Id,Symbol,Name,Meter1No,Meter2No,Meter1MaxValue,Meter2MaxValue,Description"
+      truncate="true" />
+      
+    <copy 
+      table="common_point" 
+      columns="Id,Code,Active,DateFrom,DateTo,ObjectCode,EstateCode,PointTypeId,Name,Description,ChangeReasonId,TariffCode,CountPercent,InvoicePositionNumber,StartDate,EndDate,Contact,StartDay,StartMonth,EndDay,EndMonth,GroupPoint1Id,GroupPoint2Id,GroupPoint3Id,AverageMonthly,AverageMonthlyForecast,NormMonthly,NormMonthlyForecast,ForecastToMonthEnd,ClearingType,ClearingPeriod,Quantity,Price,ContractId,BillingAlgorithmCode,InvoiceSymbol" 
+      where="Active=1 and EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1))"
+      truncate="true" />
+
+    <copy 
+      table="common_contract" 
+      columns="Id,Number,ContractTypeId,CustomerCode,CreateDate,StartDate,EndDate,TerminationDate,FinishDate,SellerSign,CustomerSign,IsMandate,ContractStatusId,ReturnDate"
+      where="CustomerCode in (select code from Common_Customer where Active=1 and ibok=1)"
+      truncate="true" />
+
+    <copy 
+      table="sale_tariff" 
+      columns="Id,Code,Active,DateFrom,DateTo,Name,SystemSymbol,ChangeReasonId,Description" 
+      truncate="true" />
+    
+    <copy 
+      table="sale_tarifftoservice" 
+      columns="Id,TariffId,ServiceCode,CountAlgorithm,PriceAlgorithm,ZeroPosition,ZeroPositionError,ByReadingMeter,Estimation,DocumentNote,Description" 
+      truncate="true" />
+    
+    <copy 
+      table="common_bank" 
+      columns="Id,Name,DirectionalNo,Comments,StreetCode" 
+      truncate="true" />
+
+    <copy 
+      table="common_customertobank" 
+      columns="Id,CustomerCode,BankId,AccountNo,DefaultBank,Description" 
+      truncate="true" />
+      
+    <exec
+      procedure="clear_private_data"
+      on="destination" />
+      
+  </steps>
+</dts>
