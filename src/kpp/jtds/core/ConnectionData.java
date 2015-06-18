@@ -45,7 +45,7 @@ public class ConnectionData
   public static ConnectionData fromXml(Element el) throws ClassNotFoundException
   {
     ConnectionData result = new ConnectionData();
-    result.url = el.getTextContent().trim();
+    result.url = el.getAttribute("url");
     result.user = el.getAttribute("user"); 
     result.password = el.getAttribute("password");
     

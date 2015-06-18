@@ -1,14 +1,13 @@
 package kpp.jtds.core;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import kpp.jdts.csv.FileStringBuilder;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -19,6 +18,8 @@ public class CopyStep extends Step
   
   final static SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   
+  final static int rowLimit = 1000 * 1000;
+  
   
   private String tableName;
   
@@ -27,6 +28,8 @@ public class CopyStep extends Step
   private String columns;
   
   private boolean truncate;
+  
+  private String into;
   
   private ArrayList<ExprColumn> exprColumns = new ArrayList<>();
   
@@ -40,11 +43,10 @@ public class CopyStep extends Step
   {
     System.out.println("Start COPY step. Current table is " + tableName);
     
-    StringBuilder sb = prepare(dts);
+    FileStringBuilder fsb = prepare(dts);
     if (rows > 0)
     {
-      File tmp = saveCSV(sb);
-      insertCSV(dts, tmp);
+      insertCSV(dts, fsb);
     }
     
     System.out.println("Done, total " + rows + " rows. ");
@@ -54,7 +56,7 @@ public class CopyStep extends Step
    * Ściąganie danych ze źródła, celem przygotowania pliku CSV
    * @return StringBuilder przechowywujący zawartość pliku
    */
-  private StringBuilder prepare(DTS dts) throws Exception
+  private FileStringBuilder prepare(DTS dts) throws Exception
   {
     System.out.print("Preparing data... ");
     
@@ -67,20 +69,22 @@ public class CopyStep extends Step
     ResultSet rs = stmt.executeQuery();
     ResultSetMetaData rsmd = rs.getMetaData();
     int columnCount = rsmd.getColumnCount();
-    StringBuilder sb = new StringBuilder();
+    
+    FileStringBuilder fsb = new FileStringBuilder();
     int i = 0;
     while (rs.next())
     {
       for (int k = 1; k <= columnCount; k++)
-        sb.append(obj2str(rs.getObject(k), rsmd.getColumnTypeName(k))).append(";");
+        fsb.append(obj2str(rs.getObject(k), rsmd.getColumnTypeName(k))).append(";");
       
-      sb.append("\r\n");
+      fsb.append("\r\n");
       i++;
     }
+    fsb.close();
     stmt.close();
     rows = i;
     System.out.println("OK.");
-    return sb;
+    return fsb;
   }
   
   /**
@@ -108,23 +112,6 @@ public class CopyStep extends Step
     return result.toString();
   }
   
-  /**
-   * Zapis treści pliku CSV do tymczasowego pliku na dysku.
-   * @param sb - obiekt zawierający treść pliku
-   * @return uchwyt do tymczasowego pliku na dysku 
-   * @throws Exception 
-   */
-  private File saveCSV(StringBuilder sb) throws Exception
-  {
-    File tmp = File.createTempFile("jdts", ".csv");
-    try(OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(tmp)))
-    {
-      osw.write(sb.toString());
-      osw.close();
-    }
-    tmp.deleteOnExit();
-    return tmp;
-  }
   
   /**
    * Import fizycznego pliku CSV do bazy danych
@@ -132,7 +119,7 @@ public class CopyStep extends Step
    * @param tmp - uchwyt do pliku tymczasowego
    * @throws Exception
    */
-  private void insertCSV(DTS dts, File tmp) throws Exception
+  private void insertCSV(DTS dts, FileStringBuilder fsb) throws Exception
   {
     StringBuilder sb = new StringBuilder();
     String sqlQuery = "";
@@ -147,9 +134,9 @@ public class CopyStep extends Step
     System.out.print("Inserting... ");
     String columnList = getColumns(false);
     
-    String path = tmp.getAbsolutePath().replace("\\", "\\\\");
+    String path = fsb.getFile().getAbsolutePath().replace("\\", "\\\\");
     sb.append("Load Data Local Infile '").append(path).append("' ");
-    sb.append("Into Table ").append(tableName).append(" ");
+    sb.append("Into Table ").append(into).append(" ");
     sb.append("Fields Terminated By ';' Enclosed By '' Escaped by '\\\\' ");
     sb.append("(").append(columnList).append(") ");
     
@@ -193,8 +180,19 @@ public class CopyStep extends Step
   {
     CopyStep result = new CopyStep();
     result.tableName = step.getAttribute("table");
+    result.into = step.getAttribute("into");
+    if (result.into.isEmpty())
+      result.into = result.tableName;
+    
     result.columns = step.getAttribute("columns");
     result.sqlWhere = step.getAttribute("where");
+    if (result.sqlWhere.isEmpty())
+    {
+      NodeList wheres = step.getElementsByTagName("where");
+      if (wheres.getLength() > 0)
+        result.sqlWhere = ((Element)wheres.item(0)).getTextContent();
+    }
+    
     result.truncate = step.getAttribute("truncate").equalsIgnoreCase("true");
     
     NodeList children = step.getElementsByTagName("*");
@@ -207,6 +205,9 @@ public class CopyStep extends Step
       ExprColumn tc = new ExprColumn();
       tc.columnName = child.getAttribute("name");
       tc.expression = child.getAttribute("expression");
+      if (tc.expression.isEmpty())
+        tc.expression = tc.columnName;
+      
       result.exprColumns.add(tc);
     }
     

@@ -1,6 +1,8 @@
 package kpp.jtds.core;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -72,7 +74,7 @@ public class DTS
     for (Step stp : steps)
       stp.execute(this);
     
-    System.out.println("Done in " + (System.currentTimeMillis() - start) + " ms");
+    System.out.println("Done in " + new BigDecimal((System.currentTimeMillis() - start) / 1000.0).setScale(2, RoundingMode.HALF_UP) + " s");
   }
   
   /** Połączenie do źródła */
