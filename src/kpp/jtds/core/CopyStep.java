@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import kpp.jdts.csv.FileStringBuilder;
@@ -18,36 +17,33 @@ public class CopyStep extends Step
   
   final static SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   
-  final static int rowLimit = 1000 * 1000;
+  static class ConfigData
+  {
+    public String query;
+    
+    public String into;
+    
+    public boolean truncate;
+  }
   
+  ConfigData config = new ConfigData();
   
-  private String tableName;
-  
-  private String sqlWhere;
-  
-  private String columns;
-  
-  private boolean truncate;
-  
-  private String into;
-  
-  private ArrayList<ExprColumn> exprColumns = new ArrayList<>();
-  
+  static int number = 0;
   
   private CopyStep() { }
   
   private int rows = 0;
+  
+  private StringBuilder columnsFromResultSet = new StringBuilder();
 
   @Override
   public void execute(DTS dts) throws Exception
   {
-    System.out.println("Start COPY step. Current table is " + tableName);
+    System.out.println(String.format("Copy step #%d into table %s is running now.", ++number, config.into));
     
     FileStringBuilder fsb = prepare(dts);
     if (rows > 0)
-    {
       insertCSV(dts, fsb);
-    }
     
     System.out.println("Done, total " + rows + " rows. ");
   }
@@ -60,15 +56,17 @@ public class CopyStep extends Step
   {
     System.out.print("Preparing data... ");
     
-    String columnList = getColumns(true);
-    String sqlQuery = String.format("Select %s from %s", columnList, tableName);
-    if (sqlWhere != null && sqlWhere.length() > 0)
-      sqlQuery += String.format(" Where %s", sqlWhere);
-    
-    PreparedStatement stmt = dts.getSrcConn().prepareStatement(sqlQuery);
+    PreparedStatement stmt = dts.getSrcConn().prepareStatement(config.query);
     ResultSet rs = stmt.executeQuery();
     ResultSetMetaData rsmd = rs.getMetaData();
     int columnCount = rsmd.getColumnCount();
+    
+    for (int k = 1; k <= columnCount; k++)
+    {
+      columnsFromResultSet.append(rsmd.getColumnLabel(k));
+      if (k < columnCount)
+        columnsFromResultSet.append(",");
+    }
     
     FileStringBuilder fsb = new FileStringBuilder();
     int i = 0;
@@ -88,32 +86,6 @@ public class CopyStep extends Step
   }
   
   /**
-   * Pobranie listy kolumn
-   * @param source - czy lista kolumn do źródła? uwzględniane wtedy są funkcje w transformacjach
-   * @return lista kolumn jako pojedynczy String, w którym każda kolumna oddzielona jest przecinkiem
-   */
-  private String getColumns(boolean source)
-  {
-    StringBuilder result = new StringBuilder(columns);
-    if (exprColumns.size() > 0)
-    {
-      result.append(",");
-      for (int i = 0, l = exprColumns.size(); i < l; i++)
-      {
-        ExprColumn tc = exprColumns.get(i);
-        if (source)
-          result.append(tc.expression).append(" As ");
-        
-        result.append(tc.columnName);
-        if (i < l - 1)
-          result.append(",");
-      }
-    }
-    return result.toString();
-  }
-  
-  
-  /**
    * Import fizycznego pliku CSV do bazy danych
    * @param dts 
    * @param tmp - uchwyt do pliku tymczasowego
@@ -123,20 +95,20 @@ public class CopyStep extends Step
   {
     StringBuilder sb = new StringBuilder();
     String sqlQuery = "";
-    if (truncate)
+    if (config.truncate)
     {
       System.out.print("Truncating... ");
-      sqlQuery = String.format("Truncate Table %s", tableName);
+      sqlQuery = String.format("Truncate Table %s", config.into);
       dts.getDestConn().prepareStatement(sqlQuery).execute();
       System.out.println("OK");
     }
     
     System.out.print("Inserting... ");
-    String columnList = getColumns(false);
+    String columnList = columnsFromResultSet.toString();
     
     String path = fsb.getFile().getAbsolutePath().replace("\\", "\\\\");
     sb.append("Load Data Local Infile '").append(path).append("' ");
-    sb.append("Into Table ").append(into).append(" ");
+    sb.append("Into Table ").append(config.into).append(" ");
     sb.append("Fields Terminated By ';' Enclosed By '' Escaped by '\\\\' ");
     sb.append("(").append(columnList).append(") ");
     
@@ -179,56 +151,17 @@ public class CopyStep extends Step
   public static CopyStep fromXml(Element step)
   {
     CopyStep result = new CopyStep();
-    result.tableName = step.getAttribute("table");
-    result.into = step.getAttribute("into");
-    if (result.into.isEmpty())
-      result.into = result.tableName;
+    result.config.into = step.getAttribute("into");
+    NodeList queries = step.getElementsByTagName("query");
+    if (queries.getLength() > 0)
+      result.config.query = ((Element)queries.item(0)).getTextContent();
     
-    result.columns = step.getAttribute("columns");
-    result.sqlWhere = step.getAttribute("where");
-    if (result.sqlWhere.isEmpty())
-    {
-      NodeList wheres = step.getElementsByTagName("where");
-      if (wheres.getLength() > 0)
-        result.sqlWhere = ((Element)wheres.item(0)).getTextContent();
-    }
-    
-    result.truncate = step.getAttribute("truncate").equalsIgnoreCase("true");
-    
-    NodeList children = step.getElementsByTagName("*");
-    for (int i = 0, l = children.getLength(); i < l; i++)
-    {
-      Element child = (Element)children.item(i);
-      if (!child.getNodeName().equalsIgnoreCase("column"))
-        continue;
-      
-      ExprColumn tc = new ExprColumn();
-      tc.columnName = child.getAttribute("name");
-      tc.expression = child.getAttribute("expression");
-      if (tc.expression.isEmpty())
-        tc.expression = tc.columnName;
-      
-      result.exprColumns.add(tc);
-    }
-    
+    result.config.truncate = step.getAttribute("truncate").equalsIgnoreCase("true");
     return result;
   }
   
   public String toString()
   {
-    return String.format("Copy table=%s where=%s", tableName, sqlWhere);
+    return String.format("Copy into=%s %s", config.into, config.truncate ? "with truncate" : "");
   }
-  
-  /** Kolumna z transformacją */
-  static class ExprColumn
-  {
-    public String columnName;
-    public String expression;
-    
-    public String toString()
-    {
-      return String.format("%s As %s", expression, columnName);
-    }
-  }
-
 }
