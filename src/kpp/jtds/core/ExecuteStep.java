@@ -14,11 +14,16 @@ public class ExecuteStep extends Step
   
   private String on = "destination";
 
+  public ExecuteStep(DTS dts)
+  {
+    super(dts);
+  }
+
   @SuppressWarnings("resource")
   @Override
-  public void execute(DTS dts) throws Exception
+  public void execute() throws Exception
   {
-    Connection conn = (on.equalsIgnoreCase("destination")) ? dts.getDestConn() : dts.getSrcConn();
+    Connection conn = (on.equalsIgnoreCase("destination")) ? dts.getDestConnection() : dts.getSourceConnection();
     if (procedure != null && !procedure.isEmpty())
     {
       System.out.print(String.format("Executing stored procedure %s on %s connection... ", procedure, on));
@@ -37,9 +42,9 @@ public class ExecuteStep extends Step
     System.out.println("OK.");
   }
   
-  public static ExecuteStep fromXml(Element el)
+  public static ExecuteStep create(Element el, DTS dts)
   {
-    ExecuteStep result = new ExecuteStep();
+    ExecuteStep result = new ExecuteStep(dts);
     result.procedure = el.getAttribute("procedure");
     result.on = el.getAttribute("on");
     result.query = el.getTextContent();

@@ -45,22 +45,19 @@ public class DTS
     Element connDst = (Element)xp.newXPath().evaluate("/dts/connections/destination", doc.getDocumentElement(), XPathConstants.NODE);
     NodeList steps = (NodeList)xp.newXPath().evaluate("/dts/steps/*", doc.getDocumentElement(), XPathConstants.NODESET);
     
-    DTS result = new DTS();
+    DTS resultDTS = new DTS();
     
-    result.source = ConnectionData.fromXml(connSrc);
-    result.destination = ConnectionData.fromXml(connDst);
+    resultDTS.source = ConnectionData.fromXml(connSrc);
+    resultDTS.destination = ConnectionData.fromXml(connDst);
     
     for (int i = 0, l = steps.getLength(); i < l; i++)
     {
       Element step = (Element) steps.item(i);
-      Step s = Step.fromXml(step);
-      if (s != null)
-        result.steps.add(s);
-      else
-        throw new Exception("Unrecognized step " + step.getNodeName());
+      Step stepObject = Step.create(step, resultDTS);
+      resultDTS.steps.add(stepObject);
     }
     
-    return result;
+    return resultDTS;
   }
   
   /** Uruchomienie DTSa */
@@ -72,19 +69,19 @@ public class DTS
     
     long start = System.currentTimeMillis();
     for (Step stp : steps)
-      stp.execute(this);
+      stp.execute();
     
     System.out.println("Done in " + new BigDecimal((System.currentTimeMillis() - start) / 1000.0).setScale(2, RoundingMode.HALF_UP) + " s");
   }
   
   /** Połączenie do źródła */
-  public Connection getSrcConn() throws SQLException
+  public Connection getSourceConnection() throws SQLException
   {
     return source.getConnection();
   }
   
   /** Połączenie do celu */
-  public Connection getDestConn() throws SQLException
+  public Connection getDestConnection() throws SQLException
   {
     return destination.getConnection();
   }

@@ -13,174 +13,183 @@
   </connections>
 
   <steps>
-    <copy 
-      into="common_customer"
-      truncate="true">
-      <query> 
-        select Id,Code,Active,DateFrom,DateTo,ShortName,Name,FatherName,MotherName,FamilyName,BirthDate,CustomerTypeId,CustomerStatusId,FirstName,LastName,StreetCode,HouseNo,LocalNo,CorrespondenceName,CorrespondenceStreetCode,CorrespondenceHouseNo,CorrespondenceLocalNo,Nip,Regon,Pesel,TelephoneNo,TelephoneGsmNo,Fax,Email,DataProcessingConsent,MarketingProcessingConsent,Earchives,NotifyEmail,NotifySMS,DirectDebit,DataSourceId,Ibok,GroupCustomer1Id,GroupCustomer2Id,GroupCustomer3Id,CustomerConsultantId,Description 
-        from common_customer
-        where Active=1 and Ibok=1
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="common_customer" -->
+<!--       truncate="true"> -->
+<!--       <query>  -->
+<!--         select Id,Code,Active,DateFrom,DateTo,ShortName,Name,FatherName,MotherName,FamilyName,BirthDate,CustomerTypeId,CustomerStatusId,FirstName,LastName,StreetCode,HouseNo,LocalNo,CorrespondenceName,CorrespondenceStreetCode,CorrespondenceHouseNo,CorrespondenceLocalNo,Nip,Regon,Pesel,TelephoneNo,TelephoneGsmNo,Fax,Email,DataProcessingConsent,MarketingProcessingConsent,Earchives,NotifyEmail,NotifySMS,DirectDebit,DataSourceId,Ibok,GroupCustomer1Id,GroupCustomer2Id,GroupCustomer3Id,CustomerConsultantId,Description  -->
+<!--         from common_customer -->
+<!--         where Active=1 and Ibok=1 -->
+<!--       </query> -->
+<!--     </copy> -->
 
-    <copy 
-      into="common_estate"
-      truncate="true">
-      <query>
-        select Id,Code,Active,DateFrom,DateTo,ShortName,Name,StreetCode,HouseNo,LocalNo,ParcelNo,Area,TelephoneNo,FaxNo,ResidentsNo,Description,EstateTypeId,SectorId,CustomerCode,RecipientCode,PayerCode,EstateOwnerTypeId,GroupEstate1Id,GroupEstate2Id,GroupEstate3Id,ChangeReasonId,TariffCode,Longitude,Latitude 
-        from common_estate
-        where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)
-      </query>  
-    </copy>
+<!--     <copy  -->
+<!--       into="common_estate" -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Code,Active,DateFrom,DateTo,ShortName,Name,StreetCode,HouseNo,LocalNo,ParcelNo,Area,TelephoneNo,FaxNo,ResidentsNo,Description,EstateTypeId,SectorId,CustomerCode,RecipientCode,PayerCode,EstateOwnerTypeId,GroupEstate1Id,GroupEstate2Id,GroupEstate3Id,ChangeReasonId,TariffCode,Longitude,Latitude  -->
+<!--         from common_estate -->
+<!--         where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1) -->
+<!--       </query>   -->
+<!--     </copy> -->
 
-    <copy 
-      into="common_street"
-      truncate="true">
-      <query>
-        select Id,Code,Active,DateFrom,DateTo,StreetPrefixId,Name,City,PostCode,PostCity,Commune,District,County,Region,Country,Longitude,Latitude
-        from common_street
-        where active=1
-      </query>  
-    </copy>
+<!--     <copy  -->
+<!--       into="common_street" -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Code,Active,DateFrom,DateTo,StreetPrefixId,Name,City,PostCode,PostCity,Commune,District,County,Region,Country,Longitude,Latitude -->
+<!--         from common_street -->
+<!--         where active=1 -->
+<!--       </query>   -->
+<!--     </copy> -->
 
-    <copy 
-      into="common_streetprefix"
-      truncate="true">
-      <query>
-        select Id,Name,Description from common_streetprefix
-      </query>  
-    </copy>
+<!--     <copy  -->
+<!--       into="common_streetprefix" -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Name,Description from common_streetprefix -->
+<!--       </query>   -->
+<!--     </copy> -->
 
-    <copy 
-      into="common_unit"
-      truncate="true">
-      <query>
-        select Id,Name,Description from common_unit
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="common_unit" -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Name,Description from common_unit -->
+<!--       </query> -->
+<!--     </copy> -->
 
-    <copy 
-      into="sale_invoiceheader"
-      truncate="true">
-      <query>
-        select Id,InvoiceBookId,SaleDate,IssueDate,PaymentDate,PaymentTypeId,CustomerId,CustomerCode,EstateCode,PayerId,PayerCode,RecipientId,RecipientCode,StreetId,HouseNo,LocalNo,CompanyBankId,BillingAlgorithmId,SettlementAlgorithmId,RegistryId,RegistryNo,DocumentNo,Year,Month,Type,Forecast,BarCode,Netto,Vat,Brutto,PriceType,ClearingAccount,CorrectionReason,AdditionalText,Fiscal,Accounted,Archivised,Printed,PrintDate,SourceInvoiceHeaderId
-        from sale_invoiceheader
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="sale_invoiceheader" -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,InvoiceBookId,SaleDate,IssueDate,PaymentDate,PaymentTypeId,CustomerId,CustomerCode,EstateCode,PayerId,PayerCode,RecipientId,RecipientCode,StreetId,HouseNo,LocalNo,CompanyBankId,BillingAlgorithmId,SettlementAlgorithmId,RegistryId,RegistryNo,DocumentNo,Year,Month,Type,Forecast,BarCode,Netto,Vat,Brutto,PriceType,ClearingAccount,CorrectionReason,AdditionalText,Fiscal,Accounted,Archivised,Printed,PrintDate,SourceInvoiceHeaderId -->
+<!--         from sale_invoiceheader -->
+<!--       </query> -->
+<!--     </copy> -->
 
-    <copy 
-      into="sale_invoiceposition"
-      truncate="true">
-      <query>
-        select Id,InvoiceHeaderId,SequenceNo,Printable,ServiceId,Price,Amount,VatRateId,VatRateValue,Netto,Vat,Brutto,VatDifference,CustomerCode,PayerCode,RecipientCode,RegistryId,TariffId,TariffToServiceId,SystemSymbol,IDWS,EstateId,EstateCode,PointId,PointCode,ReadoutId,StartDate,EndDate,PositionType,VatPaymentDateType,SourceInvoicePositionId,Description
-        from sale_invoiceposition
-      </query>  
-    </copy>
+<!--     <copy  -->
+<!--       into="sale_invoiceposition" -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,InvoiceHeaderId,SequenceNo,Printable,ServiceId,Price,Amount,VatRateId,VatRateValue,Netto,Vat,Brutto,VatDifference,CustomerCode,PayerCode,RecipientCode,RegistryId,TariffId,TariffToServiceId,SystemSymbol,IDWS,EstateId,EstateCode,PointId,PointCode,ReadoutId,StartDate,EndDate,PositionType,VatPaymentDateType,SourceInvoicePositionId,Description -->
+<!--         from sale_invoiceposition -->
+<!--       </query>   -->
+<!--     </copy> -->
       
-    <copy 
-      into="network_readout" 
-      truncate="true">
-      <query>
-        select Id,ObjectCode,IsValid,Consumption,Correction,ConsumptionSubmeter,ConsumptionCoaxial,ConsumptionAdded,ConsumptionMaster,ConsumptionMasterDivider,ConsumptionInvoice,ConsumptionTheoretical,DividerRatio,ReadoutTypeId,Status,PreviousReadoutId,MasterReadoutId,SourceReadoutId,MeterId,AverageMonthly,PowerUsageRatio,AverageTemperature,IsTakenToAverage,Description,ObjectId,ReadoutDate,Value1,Value2,Consumption1,Consumption2,ConsumptionBeforeCorrection,IsOverflow,DividerRatioValue,MeasureUnitId,CalculateUnitId,ParentCalculateUnitId,CalculatedReadoutId,CorrectedReadoutId
-        from network_readout
-        where 
-          ObjectCode in (select code from Network_Object where active=1 and code in (select objectCode from common_point where Active=1 and EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)))) 
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="network_readout"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,ObjectCode,IsValid,Consumption,Correction,ConsumptionSubmeter,ConsumptionCoaxial,ConsumptionAdded,ConsumptionMaster,ConsumptionMasterDivider,ConsumptionInvoice,ConsumptionTheoretical,DividerRatio,ReadoutTypeId,Status,PreviousReadoutId,MasterReadoutId,SourceReadoutId,MeterId,AverageMonthly,PowerUsageRatio,AverageTemperature,IsTakenToAverage,Description,ObjectId,ReadoutDate,Value1,Value2,Consumption1,Consumption2,ConsumptionBeforeCorrection,IsOverflow,DividerRatioValue,MeasureUnitId,CalculateUnitId,ParentCalculateUnitId,CalculatedReadoutId,CorrectedReadoutId -->
+<!--         from network_readout -->
+<!--         where  -->
+<!--           ObjectCode in (select code from Network_Object where active=1 and code in (select objectCode from common_point where Active=1 and EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1))))  -->
+<!--       </query> -->
+<!--     </copy> -->
       
-    <copy 
-      into="network_object" 
-      truncate="true">
-      <query>
-        select Id,Code,Active,DateFrom,DateTo,Symbol,Name,ParentObjectCode,ObjectTypeId,StreetCode,HouseNo,LocalNo,NetworkId,Longitude,Latitude,Kind,ObjectLocalizationId,FeesValue,Area,OwnerTypeId,Abonament,ClimaticZoneId,MeterKind,ChangeReasonId,DivideMeterPercent,MasterObjectCode,ParentDecreaseField,SourceObjectCode,CarrierTypeId,HeatNetTempId,HeatRegTempId,Description,IsSecondCounter,SMeterKind,DivideMeterTypeId,SDivideMeterTypeId,SDivideMeterPercent,SMasterObjectCode,SParentDecreaseField,HeatOutTempId,Seasonal,CalculatePower,CalculateArea,CalculateOther,MeasureUnitId,CalculateUnitId,UnitFactor
-        from network_object
-        where Active=1  and code in (select objectCode from common_point where EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)))
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="network_object"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Code,Active,DateFrom,DateTo,Symbol,Name,ParentObjectCode,ObjectTypeId,StreetCode,HouseNo,LocalNo,NetworkId,Longitude,Latitude,Kind,ObjectLocalizationId,FeesValue,Area,OwnerTypeId,Abonament,ClimaticZoneId,MeterKind,ChangeReasonId,DivideMeterPercent,MasterObjectCode,ParentDecreaseField,SourceObjectCode,CarrierTypeId,HeatNetTempId,HeatRegTempId,Description,IsSecondCounter,SMeterKind,DivideMeterTypeId,SDivideMeterTypeId,SDivideMeterPercent,SMasterObjectCode,SParentDecreaseField,HeatOutTempId,Seasonal,CalculatePower,CalculateArea,CalculateOther,MeasureUnitId,CalculateUnitId,UnitFactor -->
+<!--         from network_object -->
+<!--         where Active=1  and code in (select objectCode from common_point where EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1))) -->
+<!--       </query> -->
+<!--     </copy> -->
       
-    <copy 
-      into="network_objecttype" 
-      truncate="true">
-      <query>
-        select Id,Symbol,Name,Description,Kind,AllowJoinPoint,FractionalPrecision,RoundingReadoutPrecision,RoundingConsumptionPrecision,AverageTolerance,MeterTolerance,IconName
-        from network_objecttype
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="network_objecttype"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Symbol,Name,Description,Kind,AllowJoinPoint,FractionalPrecision,RoundingReadoutPrecision,RoundingConsumptionPrecision,AverageTolerance,MeterTolerance,IconName -->
+<!--         from network_objecttype -->
+<!--       </query> -->
+<!--     </copy> -->
 
-    <copy
-      into="network_meter"
-      truncate="true">
-      <query><![CDATA[
-        select  Id,Code,Active,DateFrom,DateTo,ObjectCode,MeterTypeId,MeterDocumentTypeId,SerialNo,MeterStatusId,MeterOwnerId,LegalizationFrom,LegalizationTo,SealNo,Description,_Position2
-        from network_meter
-        where 
-          Active=1 and ObjectCode in (select objectCode from common_point where EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)))
-      ]]></query>
-    </copy>
+<!--     <copy -->
+<!--       into="network_meter" -->
+<!--       truncate="true"> -->
+<!--       <query><![CDATA[ -->
+<!--         select  Id,Code,Active,DateFrom,DateTo,ObjectCode,MeterTypeId,MeterDocumentTypeId,SerialNo,MeterStatusId,MeterOwnerId,LegalizationFrom,LegalizationTo,SealNo,Description,_Position2 -->
+<!--         from network_meter -->
+<!--         where  -->
+<!--           Active=1 and ObjectCode in (select objectCode from common_point where EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1))) -->
+<!--       ]]></query> -->
+<!--     </copy> -->
       
     
-    <copy 
-      into="network_metertype"
-      truncate="true">
-      <query>
-      select Id,Symbol,Name,Meter1No,Meter2No,Meter1MaxValue,Meter2MaxValue,Description
-      from network_metertype
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="network_metertype" -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--       select Id,Symbol,Name,Meter1No,Meter2No,Meter1MaxValue,Meter2MaxValue,Description -->
+<!--       from network_metertype -->
+<!--       </query> -->
+<!--     </copy> -->
       
-    <copy 
-      into="common_point" 
-      truncate="true">
-      <query>
-        select Id,Code,Active,DateFrom,DateTo,ObjectCode,EstateCode,PointTypeId,Name,Description,ChangeReasonId,TariffCode,CountPercent,InvoicePositionNumber,StartDate,EndDate,Contact,StartDay,StartMonth,EndDay,EndMonth,GroupPoint1Id,GroupPoint2Id,GroupPoint3Id,AverageMonthly,AverageMonthlyForecast,NormMonthly,NormMonthlyForecast,ForecastToMonthEnd,ClearingType,ClearingPeriod,Quantity,Price,ContractId,BillingAlgorithmCode,InvoiceSymbol
-        from common_point
-        where Active=1 and EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1)) 
-      </query>  
-    </copy>
+<!--     <copy  -->
+<!--       into="common_point"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Code,Active,DateFrom,DateTo,ObjectCode,EstateCode,PointTypeId,Name,Description,ChangeReasonId,TariffCode,CountPercent,InvoicePositionNumber,StartDate,EndDate,Contact,StartDay,StartMonth,EndDay,EndMonth,GroupPoint1Id,GroupPoint2Id,GroupPoint3Id,AverageMonthly,AverageMonthlyForecast,NormMonthly,NormMonthlyForecast,ForecastToMonthEnd,ClearingType,ClearingPeriod,Quantity,Price,ContractId,BillingAlgorithmCode,InvoiceSymbol -->
+<!--         from common_point -->
+<!--         where Active=1 and EstateCode in (select code from Common_Estate where Active=1 and CustomerCode in (select Code from Common_Customer where Active=1 and Ibok=1))  -->
+<!--       </query>   -->
+<!--     </copy> -->
 
-    <copy 
-      into="common_contract" 
-      truncate="true">
-      <query>
-        select Id,Number,ContractTypeId,CustomerCode,CreateDate,StartDate,EndDate,TerminationDate,FinishDate,SellerSign,CustomerSign,IsMandate,ContractStatusId,ReturnDate
-        from common_contract
-        where CustomerCode in (select code from Common_Customer where Active=1 and ibok=1)
-      </query>  
-    </copy>
+<!--     <copy  -->
+<!--       into="common_contract"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Number,ContractTypeId,CustomerCode,CreateDate,StartDate,EndDate,TerminationDate,FinishDate,SellerSign,CustomerSign,IsMandate,ContractStatusId,ReturnDate -->
+<!--         from common_contract -->
+<!--         where CustomerCode in (select code from Common_Customer where Active=1 and ibok=1) -->
+<!--       </query>   -->
+<!--     </copy> -->
 
-    <copy 
-      into="sale_tariff" 
-      truncate="true">
-      <query>
-        select Id,Code,Active,DateFrom,DateTo,Name,SystemSymbol,ChangeReasonId,Description
-        from sale_tariff
-      </query>
-    </copy>
+<!--     <copy  -->
+<!--       into="sale_tariff"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Code,Active,DateFrom,DateTo,Name,SystemSymbol,ChangeReasonId,Description -->
+<!--         from sale_tariff -->
+<!--       </query> -->
+<!--     </copy> -->
+    
+<!--     <copy  -->
+<!--       into="sale_tarifftoservice"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,TariffId,ServiceCode,CountAlgorithm,PriceAlgorithm,ZeroPosition,ZeroPositionError,ByReadingMeter,Estimation,DocumentNote,Description -->
+<!--         from sale_tarifftoservice  -->
+<!--       </query> -->
+<!--     </copy> -->
+    
+<!--     <copy  -->
+<!--       into="common_bank"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,Name,DirectionalNo,Comments,StreetCode -->
+<!--         from common_bank -->
+<!--       </query>   -->
+<!--     </copy> -->
+
+<!--     <copy  -->
+<!--       into="common_customertobank"  -->
+<!--       truncate="true"> -->
+<!--       <query> -->
+<!--         select Id,CustomerCode,BankId,AccountNo,DefaultBank,Description -->
+<!--         from common_customertobank -->
+<!--       </query> -->
+<!--     </copy> -->
     
     <copy 
-      into="sale_tarifftoservice" 
-      truncate="true">
+      into="common_customerconsultant"
+      behaviour="replace">
       <query>
-        select Id,TariffId,ServiceCode,CountAlgorithm,PriceAlgorithm,ZeroPosition,ZeroPositionError,ByReadingMeter,Estimation,DocumentNote,Description
-        from sale_tarifftoservice 
-      </query>
-    </copy>
-    
-    <copy 
-      into="common_bank" 
-      truncate="true">
-      <query>
-        select Id,Name,DirectionalNo,Comments,StreetCode
-        from common_bank
-      </query>  
-    </copy>
-
-    <copy 
-      into="common_customertobank" 
-      truncate="true">
-      <query>
-        select Id,CustomerCode,BankId,AccountNo,DefaultBank,Description
-        from common_customertobank
+        select Id,Symbol,Name,Description,'' as Email, '' as TelephoneNo
+        from common_customerconsultant
       </query>
     </copy>
       
