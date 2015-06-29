@@ -151,7 +151,7 @@ public class CopyStep extends Step
       return "\\N"; // szpecjal for mysql
     
     if (object instanceof String)
-      return object.toString().replace("\"", "\\\"");
+      return object.toString().replace("\"", "\\\"").replace(";", "\\;");
     
     if (columnType.equalsIgnoreCase("date"))
       return ShortDateFormat.format((Date)object);
