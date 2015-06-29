@@ -6,8 +6,8 @@ import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,21 +18,26 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+/**
+ * DTS class
+ * Responsible for reading configuration from XML file and running it.
+ */
 public class DTS
 {
   private ConnectionData source;
   
   private ConnectionData destination;
   
-  private ArrayList<Step> steps = new ArrayList<>();
+  private LinkedList<Step> steps = new LinkedList<>();
   
+  /** Forbidden zone. */
   private DTS() { }
   
   /**
-   * Utworzenie instancji DTS na podstawie elementu XML
-   * @param xmlFilePath - ścieżka do pliku XML
-   * @return
-   * @throws Exception
+   * Create instance of class which will be based on XML file.
+   * @param xmlFilePath - path to xml file with all DTS configuration.
+   * @return DTS instance
+   * @throws Exception - when something goes wrong
    */
   public static DTS createFromXml(String xmlFilePath) throws Exception
   {
@@ -60,7 +65,11 @@ public class DTS
     return resultDTS;
   }
   
-  /** Uruchomienie DTSa */
+  /**
+   * Let's go!
+   * Run all steps and exec functions. 
+   * @throws Exception - when some step throws exception
+   */
   public void run() throws Exception
   {
     System.out.println("Staring DTS at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
@@ -74,13 +83,13 @@ public class DTS
     System.out.println("Done in " + new BigDecimal((System.currentTimeMillis() - start) / 1000.0).setScale(2, RoundingMode.HALF_UP) + " s");
   }
   
-  /** Połączenie do źródła */
+  /** Get connection to source database */
   public Connection getSourceConnection() throws SQLException
   {
     return source.getConnection();
   }
   
-  /** Połączenie do celu */
+  /** Get connection to destination database */
   public Connection getDestConnection() throws SQLException
   {
     return destination.getConnection();

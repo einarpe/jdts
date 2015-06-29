@@ -2,12 +2,13 @@ package kpp.jtds.core;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.w3c.dom.Element;
 
+/** 
+ * Class for storing connection data such as: url to database, user and password used to login and driver.
+ */
 public class ConnectionData
 {
   private String url;
@@ -16,6 +17,13 @@ public class ConnectionData
   
   private Connection connection = null;
   
+  /** Forbidden constructor */
+  private ConnectionData() { }
+  
+  /**
+   * Returns opened connection to database.
+   * @throws SQLException
+   */
   public Connection getConnection() throws SQLException
   {
     if (connection != null && !connection.isClosed())
@@ -25,23 +33,12 @@ public class ConnectionData
     return connection;
   }
   
-  public static void test() throws Exception
-  {
-    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-    
-    String url = "jdbc:sqlserver://localhost:19570;databaseName=master;integratedSecurity=true;";
-    
-    Connection connection = DriverManager.getConnection(url, "", "");
-    System.out.println(connection);
-    
-    PreparedStatement ps = connection.prepareStatement("Select SYSTEM_USER ");
-    ResultSet rs = ps.executeQuery();
-    if (rs.next())
-      System.out.println("current_user = " + rs.getObject(1));
-    rs.close();
-    ps.close();
-  }
-
+  /**
+   * Create instance of ConnectionData class based on XML element.
+   * @param el - xml element
+   * @return
+   * @throws ClassNotFoundException when driver class will not be found in classpath
+   */
   public static ConnectionData fromXml(Element el) throws ClassNotFoundException
   {
     ConnectionData result = new ConnectionData();

@@ -17,7 +17,7 @@ public class CopyStep extends Step
   
   final static SimpleDateFormat LongDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   
-  /** Konfiguracja na podstawie odczytanego elementu XML */
+  /** Class containing data read from XML element */
   static class ConfigData
   {
     public String query;
@@ -55,49 +55,47 @@ public class CopyStep extends Step
   }
 
   /** 
-   * Ściąganie danych ze źródła, celem przygotowania pliku CSV
-   * @return StringBuilder przechowywujący zawartość pliku
+   * Preparation of CSV file. Function reads data based on query and writes it to temporary CSV file.
+   * @return rows read from source database
    */
   private int prepare() throws Exception
   {
     System.out.print("Preparing data... ");
-    
-    PreparedStatement stmt = dts.getSourceConnection().prepareStatement(config.query);
-    ResultSet rs = stmt.executeQuery();
-    ResultSetMetaData rsmd = rs.getMetaData();
-    int columnCount = rsmd.getColumnCount();
-    
-    for (int k = 1; k <= columnCount; k++)
+    int rows = 0;
+    try (PreparedStatement stmt = dts.getSourceConnection().prepareStatement(config.query))
     {
-      columnsFromResultSet.append(rsmd.getColumnLabel(k));
-      if (k < columnCount)
-        columnsFromResultSet.append(',');
-    }
-    
-    fsb = new FileStringBuilder();
-    
-    int i = 0;
-    while (rs.next())
-    {
+      ResultSet rs = stmt.executeQuery();
+      ResultSetMetaData rsmd = rs.getMetaData();
+      int columnCount = rsmd.getColumnCount();
+      
       for (int k = 1; k <= columnCount; k++)
       {
-        fsb.append(obj2str(rs.getObject(k), rsmd.getColumnTypeName(k))).append(";");
+        columnsFromResultSet.append(rsmd.getColumnLabel(k));
+        if (k < columnCount)
+          columnsFromResultSet.append(',');
       }
       
-      fsb.append("\r\n");
-      i++;
+      fsb = new FileStringBuilder();
+      while (rs.next())
+      {
+        for (int k = 1; k <= columnCount; k++)
+        {
+          fsb.append(obj2str(rs.getObject(k), rsmd.getColumnTypeName(k))).append(";");
+        }
+        
+        fsb.append("\r\n");
+        rows++;
+      }
+      fsb.close();
     }
-    fsb.close();
-    stmt.close();
     
     System.out.println("OK.");
-    return i;
+    return rows;
   }
   
   /**
-   * Import fizycznego pliku CSV do bazy danych
-   * @param dts 
-   * @param tmp - uchwyt do pliku tymczasowego
+   * We have got not empty temporary file with CSV contents now. 
+   * So perform merging it with destination table. 
    * @throws Exception
    */
   private void insertCSV() throws Exception
@@ -117,7 +115,7 @@ public class CopyStep extends Step
     System.out.println("OK");
   }
   
-  /** Pobranie zapytania dodającego dane do tabeli na podstawie pliku csv */
+  /** Return LOAD DATA INFILE query. Query is based on temporary file location and list of columns from source ResultSet. */
   protected String getLoadDataInfileQuery()
   {
     StringBuilder sb = new StringBuilder();
@@ -135,17 +133,17 @@ public class CopyStep extends Step
     return sb.toString();
   }
   
-  /** Pobranie zapytania usuwającego dane z docelowej tabeli */
+  /** Return TRUNCATE TABLE or DELETE FROM query. */
   protected String getTruncateQuery()
   {
     return String.format("Delete From %s", config.into);
   }
 
   /**
-   * Konwersja obiektu do postaci zrozumiałej przez MySQLowy czytnik CSV
-   * @param object - obiekt 
-   * @param columnType - typ kolumny
-   * @return ciąg znaków zapisany jako wartość kolumny CSV
+   * Convert given object to string readable by MYSQL LOAD DATA INFILE query.
+   * @param object - object to convert
+   * @param columnType - column type from ResultSetMetaData
+   * @return string readable by Mysql CSV reader
    */
   private Object obj2str(Object object, String columnType)
   {
@@ -165,8 +163,8 @@ public class CopyStep extends Step
   }
   
   /**
-   * Utworzenie instacji CopyStep na podstawie elementu XML.
-   * @param step - element xml
+   * Returns instance of CopyStep class based on XML element.
+   * @param step - xml element
    * @return 
    */
   public static CopyStep create(Element step, DTS dts)

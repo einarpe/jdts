@@ -17,7 +17,7 @@ public class Program
     {
       DTS.createFromXml(args[0]).run();
     }
-    catch (Exception ex)
+    catch (Throwable ex)
     {
       ex.printStackTrace();
     }
