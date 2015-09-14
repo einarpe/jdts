@@ -136,7 +136,7 @@ public class CopyStep extends Step
   /** Return TRUNCATE TABLE or DELETE FROM query. */
   protected String getTruncateQuery()
   {
-    return String.format("Delete From %s", config.into);
+    return String.format("Truncate Table %s", config.into);
   }
 
   /**

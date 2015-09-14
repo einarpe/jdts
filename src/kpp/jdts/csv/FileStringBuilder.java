@@ -42,7 +42,12 @@ public class FileStringBuilder implements Closeable
   
   public void setFile() throws IOException
   {
-    file = File.createTempFile("jdts", ".csv");
+    String filePath = System.getProperty("tempfilepath");
+    if (filePath != null && !filePath.isEmpty())
+      file = File.createTempFile("jdts", ".csv", new File(filePath));
+    else
+      file = File.createTempFile("jdts", ".csv");
+    
     file.deleteOnExit();
     fw = new FileWriter(file);
   }
