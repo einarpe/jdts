@@ -1,7 +1,7 @@
 package kpp.jtds.core;
 
 import kpp.jdts.importer.Importer;
-import kpp.jdts.importer.MySQLImporter;
+import kpp.jdts.importer.ImporterFactory;
 
 import org.w3c.dom.Element;
 
@@ -29,12 +29,13 @@ public class CopyStep extends Step
    * Returns instance of CopyStep class based on XML element.
    * @param element - xml element
    * @return 
+   * @throws Exception 
    */
-  public static CopyStep create(Element element, DTS dts)
+  public static CopyStep create(Element element, DTS dts) throws Exception
   {
     CopyStep result = new CopyStep(dts);
     result.dts = dts;
-    result.importer = new MySQLImporter(result);
+    result.importer = ImporterFactory.newInstance(result); // new MySQLImporter(result);
     result.importer.setPropertiesFromXml(element);
     return result;
   }

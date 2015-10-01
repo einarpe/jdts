@@ -1,6 +1,5 @@
 package kpp.jtds.core;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -9,10 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+
+import kpp.jtds.GlobalConfiguration;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -35,20 +34,17 @@ public class DTS
   
   /**
    * Create instance of class which will be based on XML file.
-   * @param xmlFilePath - path to xml file with all DTS configuration.
    * @return DTS instance
    * @throws Exception - when something goes wrong
    */
-  public static DTS createFromXml(String xmlFilePath) throws Exception
+  public static DTS createFromXml() throws Exception
   {
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    DocumentBuilder db = dbf.newDocumentBuilder();
-    Document doc = db.parse(new File(xmlFilePath));
+    Document doc = GlobalConfiguration.getXmlDocument();
     
     XPathFactory xp = XPathFactory.newInstance();
     Element connSrc = (Element)xp.newXPath().evaluate("/dts/connections/source", doc.getDocumentElement(), XPathConstants.NODE);
     Element connDst = (Element)xp.newXPath().evaluate("/dts/connections/destination", doc.getDocumentElement(), XPathConstants.NODE);
-    NodeList steps = (NodeList)xp.newXPath().evaluate("/dts/steps/*", doc.getDocumentElement(), XPathConstants.NODESET);
+    NodeList steps = GlobalConfiguration.getSteps(); 
     
     DTS resultDTS = new DTS();
     

@@ -16,7 +16,8 @@ public class Program
     
     try
     {
-      DTS.createFromXml(args[0]).run();
+      GlobalConfiguration.init(args[0]);
+      DTS.createFromXml().run();
     }
     catch (Throwable ex)
     {

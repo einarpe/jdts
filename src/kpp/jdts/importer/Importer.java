@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 import org.w3c.dom.Element;
@@ -36,6 +37,9 @@ public abstract class Importer
   protected FileStringBuilder fsb;
   
   protected Properties config = new Properties();
+
+  /** If there should be last semicolon on each line of CSV? */
+  protected boolean appendLastSemicolon = true;
   
   public Importer(Step step)
   {
@@ -74,7 +78,16 @@ public abstract class Importer
       while (rs.next())
       {
         for (int k = 1; k <= columnCount; k++)
-          fsb.append(obj2str(rs.getObject(k), rsmd.getColumnTypeName(k))).append(";");
+        {
+          fsb.append(obj2str(rs.getObject(k), rsmd.getColumnTypeName(k)));
+          if (k == columnCount)
+          {
+            if (appendLastSemicolon)
+              fsb.append(";");
+          }
+          else
+            fsb.append(";");
+        }
         
         fsb.append("\r\n");
         rows++;
@@ -137,7 +150,28 @@ public abstract class Importer
     return String.format("Truncate Table %s", config.getProperty(CP_INTO));
   }
   
-  protected abstract String getLoadDataInfileQuery();
+  /**
+   * Convert given object to string readable by MYSQL LOAD DATA INFILE query.
+   * @param object - object to convert
+   * @param columnType - column type from ResultSetMetaData
+   * @return string readable by Mysql CSV reader
+   */
+  protected Object obj2str(Object object, String columnType)
+  {
+    if (object == null)
+      return "\\N"; // szpecjal for mysql
+    
+    if (object instanceof String)
+      return object.toString().replace("\"", "\\\"").replace(";", "\\;");
+    
+    if (columnType.equalsIgnoreCase("date"))
+      return ShortDateFormat.format((Date)object);
+    
+    if (columnType.equalsIgnoreCase("datetime"))
+      return LongDateFormat.format((Date)object);
+    
+    return object;
+  }
   
-  protected abstract Object obj2str(Object object, String columnType);
+  protected abstract String getLoadDataInfileQuery();
 }

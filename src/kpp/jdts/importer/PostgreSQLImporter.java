@@ -4,38 +4,36 @@ import kpp.jtds.core.Step;
 
 public class PostgreSQLImporter extends Importer
 {
-
   public PostgreSQLImporter(Step step)
   {
     super(step);
-  }
-
-  @Override
-  public void insert() throws Exception
-  {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  protected Object obj2str(Object object, String columnType)
-  {
-    // TODO Auto-generated method stub
-    return null;
+    appendLastSemicolon = false;
   }
 
   @Override
   protected String getLoadDataInfileQuery()
   {
-    // TODO Auto-generated method stub
-    return null;
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append("Copy ").append(config.getProperty(CP_INTO));
+    sb.append('(').append(columnsFromResultSet.toString()).append(')');
+    sb.append(" From ");
+    
+    String path = fsb.getFile().getAbsolutePath().replace("\\", "\\\\");
+    sb.append("'").append(path).append("' ");
+    
+    sb.append("NULL '\\N' ");
+    sb.append("QUOTE '''' ");
+    sb.append("ESCAPE '\\' ");
+    sb.append("DELIMITER ';' CSV ");
+    
+    return sb.toString();
   }
-
+  
   @Override
   protected String getTruncateQuery()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return String.format("Truncate Table %s Cascade", config.getProperty(CP_INTO));
   }
 
 }

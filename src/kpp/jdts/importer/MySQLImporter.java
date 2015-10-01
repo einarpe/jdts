@@ -1,7 +1,5 @@
 package kpp.jdts.importer;
 
-import java.util.Date;
-
 import kpp.jtds.core.Step;
 
 public class MySQLImporter extends Importer
@@ -28,28 +26,4 @@ public class MySQLImporter extends Importer
     
     return sb.toString();
   }
-
-  /**
-   * Convert given object to string readable by MYSQL LOAD DATA INFILE query.
-   * @param object - object to convert
-   * @param columnType - column type from ResultSetMetaData
-   * @return string readable by Mysql CSV reader
-   */
-  protected Object obj2str(Object object, String columnType)
-  {
-    if (object == null)
-      return "\\N"; // szpecjal for mysql
-    
-    if (object instanceof String)
-      return object.toString().replace("\"", "\\\"").replace(";", "\\;");
-    
-    if (columnType.equalsIgnoreCase("date"))
-      return ShortDateFormat.format((Date)object);
-    
-    if (columnType.equalsIgnoreCase("datetime"))
-      return LongDateFormat.format((Date)object);
-    
-    return object;
-  }
-
 }
