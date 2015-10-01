@@ -1,6 +1,7 @@
 package kpp.jtds;
 
 import kpp.jtds.core.DTS;
+import kpp.jtds.core.Logger;
 
 public class Program
 {
@@ -19,7 +20,7 @@ public class Program
     }
     catch (Throwable ex)
     {
-      ex.printStackTrace();
+      Logger.error(ex.getMessage());
     }
   }
 

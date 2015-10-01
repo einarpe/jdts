@@ -72,15 +72,15 @@ public class DTS
    */
   public void run() throws Exception
   {
-    System.out.println("Staring DTS at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+    Logger.info("Staring DTS at ", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
     if (steps.size() == 0)
-      System.out.println("No steps found.");
+      Logger.info("No steps found.");
     
     long start = System.currentTimeMillis();
     for (Step stp : steps)
       stp.execute();
     
-    System.out.println("Done in " + new BigDecimal((System.currentTimeMillis() - start) / 1000.0).setScale(2, RoundingMode.HALF_UP) + " s");
+    Logger.info("Done in ", new BigDecimal((System.currentTimeMillis() - start) / 1000.0).setScale(2, RoundingMode.HALF_UP).toString(), " s");
   }
   
   /** Get connection to source database */

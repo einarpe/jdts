@@ -42,7 +42,7 @@ public abstract class Step
    * @param sqlQuery - query to execute
    * @throws SQLException
    */
-  protected void destinationExecStatement(String sqlQuery) throws SQLException
+  public void destinationExecStatement(String sqlQuery) throws SQLException
   {
     dts.getDestConnection().prepareStatement(sqlQuery).execute();
   }
@@ -52,8 +52,13 @@ public abstract class Step
    * @param sqlQuery - query to execute
    * @throws SQLException
    */
-  protected void sourceExecStatement(String sqlQuery) throws SQLException
+  public void sourceExecStatement(String sqlQuery) throws SQLException
   {
     dts.getSourceConnection().prepareStatement(sqlQuery).execute();
+  }
+  
+  public DTS getDTS()
+  {
+    return dts;
   }
 }
