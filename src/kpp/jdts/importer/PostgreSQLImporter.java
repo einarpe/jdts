@@ -40,7 +40,16 @@ public class PostgreSQLImporter extends Importer
     if (object != null && object instanceof String)
       try
       {
-        return new String(object.toString().getBytes("windows-1250"));
+        byte[] bytes = object.toString().getBytes("windows-1250");
+        for (int i = 0; i < bytes.length; i++)
+          if (bytes[i] == 0)
+            bytes[i] = 32;
+        
+        return String.format("'%s'", new String(bytes)
+          .replace(";", "\\;")
+          .replace("'", "\\'")
+          .replace("\\", "\\\\")
+          .replace("'", "\\'"));
       }
       catch (UnsupportedEncodingException e)
       {
