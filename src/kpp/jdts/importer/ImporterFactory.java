@@ -9,6 +9,9 @@ import org.w3c.dom.Element;
 
 public class ImporterFactory
 {
+  
+  static Importer instance;
+  
   /**
    * Create instance of importer basing on configuration file.
    * @param step - step

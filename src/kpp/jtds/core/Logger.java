@@ -1,8 +1,6 @@
 package kpp.jtds.core;
 
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 
 public final class Logger
@@ -11,7 +9,8 @@ public final class Logger
   
   static
   {
-    log.setLevel(System.getProperty("debug") != null ? Level.ALL : Level.INFO);
+    log.setLevel(System.getProperty("debug") != null ? Level.FINEST : Level.INFO);
+    /*
     log.addHandler(new Handler() {
       
       @Override
@@ -31,7 +30,7 @@ public final class Logger
       {
         // do nothing
       }
-    });
+    });*/
   }
   
   public static void info(String ... msg)
