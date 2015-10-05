@@ -7,10 +7,14 @@ import kpp.jtds.core.Step;
 
 public class PostgreSQLImporter extends Importer
 {
+  static
+  {
+    appendLastSemicolon = false;
+  }
+  
   public PostgreSQLImporter(Step step)
   {
     super(step);
-    appendLastSemicolon = false;
   }
 
   @Override
@@ -62,6 +66,6 @@ public class PostgreSQLImporter extends Importer
   @Override
   protected String getTruncateQuery()
   {
-    return String.format("Truncate Table %s Cascade", config.getProperty(CP_INTO));
+    return String.format("Truncate Table Only %s", config.getProperty(CP_INTO));
   }
 }

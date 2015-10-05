@@ -4,9 +4,20 @@ import kpp.jtds.core.Step;
 
 public class MySQLImporter extends Importer
 {
+  
+  static
+  {
+    quotedColumns.add("separator");
+    quotedColumns.add("order");
+    
+    quoteColumnChar = "`";
+  }
+  
   public MySQLImporter(Step step)
   {
     super(step);
+    
+    
   }
   
   /** Return LOAD DATA INFILE query. Query is based on temporary file location and list of columns from source ResultSet. */

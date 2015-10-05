@@ -22,7 +22,7 @@ public class ExecuteStep extends Step
   @Override
   public void execute() throws Exception
   {
-    Logger.info("Executing query starting... ");
+    Logger.info("Executing query starting... "); 
     
     @SuppressWarnings("resource")
     Connection conn = (on.equalsIgnoreCase("destination")) ? dts.getDestConnection() : dts.getSourceConnection();
@@ -38,6 +38,8 @@ public class ExecuteStep extends Step
     if (query != null && !query.isEmpty())
     {
       Logger.info(String.format("Query execute on %s connection... ", on));
+      Logger.debug(query);
+      
       try (PreparedStatement ps = conn.prepareStatement(query))
       {
         ps.execute();

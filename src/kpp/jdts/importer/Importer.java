@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Properties;
 
 import org.w3c.dom.Element;
@@ -16,8 +17,6 @@ import kpp.jtds.core.Step;
 
 public abstract class Importer
 {
-  
-  
   public final static SimpleDateFormat ShortDateFormat = new SimpleDateFormat("yyyy-MM-dd");
   
   public final static SimpleDateFormat LongDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -37,9 +36,13 @@ public abstract class Importer
   protected FileStringBuilder fsb;
   
   protected Properties config = new Properties();
+  
+  protected static HashSet<String> quotedColumns = new HashSet<String>();
+  
+  protected static String quoteColumnChar = "";
 
   /** If there should be last semicolon on each line of CSV? */
-  protected boolean appendLastSemicolon = true;
+  protected static boolean appendLastSemicolon = true;
   
   public Importer(Step step)
   {
@@ -69,7 +72,8 @@ public abstract class Importer
       columnsFromResultSet = new StringBuilder();
       for (int k = 1; k <= columnCount; k++)
       {
-        columnsFromResultSet.append(rsmd.getColumnLabel(k));
+        String columnName = quote(rsmd.getColumnLabel(k));
+        columnsFromResultSet.append(columnName);
         if (k < columnCount)
           columnsFromResultSet.append(',');
       }
@@ -173,5 +177,14 @@ public abstract class Importer
     return object;
   }
   
+  protected String quote(String columnName)
+  {
+    if (quotedColumns.contains(columnName.toLowerCase()))
+      return String.format("%s%s%s", quoteColumnChar, columnName, quoteColumnChar);
+    
+    return columnName;
+  }
+  
   protected abstract String getLoadDataInfileQuery();
+  
 }

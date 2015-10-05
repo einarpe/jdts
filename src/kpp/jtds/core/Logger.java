@@ -1,36 +1,16 @@
 package kpp.jtds.core;
 
-import java.util.logging.Level;
 
 
 public final class Logger
 {
   public static java.util.logging.Logger log = java.util.logging.Logger.getLogger("kpp.jdts");
   
+  private static boolean isDebug = false;
+  
   static
   {
-    log.setLevel(System.getProperty("debug") != null ? Level.FINEST : Level.INFO);
-    /*
-    log.addHandler(new Handler() {
-      
-      @Override
-      public void publish(LogRecord record)
-      {
-        System.out.println(record.getMessage());
-      }
-      
-      @Override
-      public void flush()
-      {
-        System.out.flush();
-      }
-      
-      @Override
-      public void close() throws SecurityException
-      {
-        // do nothing
-      }
-    });*/
+    isDebug = System.getProperty("debug") != null ;
   }
   
   public static void info(String ... msg)
@@ -54,7 +34,8 @@ public final class Logger
 
   public static void debug(String ... msg)
   {
-    log.fine(join(msg));
+    if (isDebug)
+      log.info(join(msg));
   }
 
 }
