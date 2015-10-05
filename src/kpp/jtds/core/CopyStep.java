@@ -9,6 +9,10 @@ public class CopyStep extends Step
 { 
   static int number = 0;
   
+  private String[] executeBefore = new String[0];
+  
+  private String[] executeAfter = new String[0];
+  
   public CopyStep(DTS dts)
   {
     super(dts);
@@ -20,9 +24,13 @@ public class CopyStep extends Step
   @Override
   public void execute() throws Exception
   {
+    importer.executeStepExecute(executeBefore); // 
+    
     int rows = importer.prepare();
     if (rows > 0)
       importer.insert();
+    
+    importer.executeStepExecute(executeAfter); // 
   }
   
   /**
@@ -35,8 +43,15 @@ public class CopyStep extends Step
   {
     CopyStep result = new CopyStep(dts);
     result.dts = dts;
-    result.importer = ImporterFactory.newInstance(result); // new MySQLImporter(result);
+    result.importer = ImporterFactory.newInstance(result);
     result.importer.setPropertiesFromXml(element);
+    
+    Element execute = XmlUtils.getFirst(element, "execute");
+    if (execute != null)
+    {
+      result.executeBefore = execute.getAttribute("before").split(",");
+      result.executeAfter = execute.getAttribute("after").split(",");
+    }
     return result;
   }
   

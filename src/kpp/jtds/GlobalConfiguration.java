@@ -53,11 +53,66 @@ public class GlobalConfiguration
       return null;
     }
   }
-
+  
+  /** Default buffer for FileStringBuilder. */
+  final static int DEFAULT_BUFFER_SIZE = 8 * 1024 * 1024;
+  
+  public static int getBufferSize()
+  {
+    try
+    {
+      Element buffer = (Element)xp.newXPath().evaluate("/dts/config/buffer", document.getDocumentElement(), XPathConstants.NODE);
+      if (buffer == null)
+        return DEFAULT_BUFFER_SIZE;
+      
+      String buffSizeStr = buffer.getAttribute("size");
+      return Integer.parseInt(buffSizeStr);
+    }
+    catch (XPathExpressionException e)
+    {
+      return DEFAULT_BUFFER_SIZE; 
+    }
+  }
+  
+  /** Configuration of temporary files */
+  public static TempFileConfig getTempFileConfig()
+  {
+    TempFileConfig ret = new TempFileConfig();
+    ret.Dir = System.getProperty("java.io.tmpdir");
+    ret.KeepFiles = false;
+    
+    try
+    {
+      Element tempfiles = (Element)xp.newXPath().evaluate("/dts/config/tempfiles", document.getDocumentElement(), XPathConstants.NODE);
+      if (tempfiles != null)
+      {
+        String dir = tempfiles.getAttribute("dir");
+        if (dir != null && !dir.trim().isEmpty())
+          ret.Dir = dir;
+        
+        ret.KeepFiles = Boolean.parseBoolean(tempfiles.getAttribute("keep"));
+      }
+    }
+    catch (XPathExpressionException e)
+    {
+    }
+    return ret;
+  }
+  
+  /** Get instance of Document interface of XML file passed to program as argument. */
   public static Document getXmlDocument()
   {
     return document;
   }
   
+  /** Class containing values for handling temporary files. */
+  public static final class TempFileConfig
+  {
+    /** Directory where tempfiles should be saved into. */
+    public String Dir;
+    
+    /** Keep temporary files after jdts ends it's job? */
+    public boolean KeepFiles;
+  }
   
 }

@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import kpp.jdts.csv.FileStringBuilder;
+import kpp.jtds.core.ExecuteStep;
 import kpp.jtds.core.Logger;
 import kpp.jtds.core.Step;
 
@@ -183,6 +184,12 @@ public abstract class Importer
       return String.format("%s%s%s", quoteColumnChar, columnName, quoteColumnChar);
     
     return columnName;
+  }
+  
+  /** Execute one or more execute steps of given name ... */
+  public void executeStepExecute(String[] execNames) throws Exception
+  {
+    ExecuteStep.executeList(execNames);
   }
   
   protected abstract String getLoadDataInfileQuery();

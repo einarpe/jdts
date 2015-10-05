@@ -1,5 +1,6 @@
 package kpp.jtds;
 
+import kpp.jdts.csv.FileStringBuilder;
 import kpp.jtds.core.DTS;
 import kpp.jtds.core.Logger;
 
@@ -17,6 +18,7 @@ public class Program
     try
     {
       GlobalConfiguration.init(args[0]);
+      FileStringBuilder.loadConfig();
       DTS.createFromXml().run();
     }
     catch (Throwable ex)

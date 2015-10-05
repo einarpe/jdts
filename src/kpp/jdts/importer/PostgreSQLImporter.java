@@ -22,9 +22,9 @@ public class PostgreSQLImporter extends Importer
   {
     StringBuilder sb = new StringBuilder();
     
-    sb.append("Copy ").append(config.getProperty(CP_INTO));
+    sb.append("COPY ").append(config.getProperty(CP_INTO));
     sb.append('(').append(columnsFromResultSet.toString()).append(')');
-    sb.append(" From ");
+    sb.append(" FROM ");
     
     String path = fsb.getFile().getAbsolutePath().replace("\\", "\\\\");
     sb.append("'").append(path).append("' ");

@@ -5,23 +5,41 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import kpp.jtds.GlobalConfiguration;
+
 /**
  * FileStringBuilder acts like StringBuilder, but it works with files.
  * It uses buffer for storing data. When that buffer exceeds defined length, all data from buffer is saved to file.
  */
 public class FileStringBuilder implements Closeable
 {
+  /** Max buffer size (bytes) */
+  private static int buffSize = 8 * 1024 * 1024;  // 8 MB as default
+  
+  /** Path to store temporary CSV files */
+  private static String tempFilePath = null;
+  
+  /** Do keep files when jdts finishes its job? */
+  private static boolean keepFiles = false;
+  
   /** Buffer */
   private StringBuilder sb;
-  
-  /** Max buffer size (bytes) */
-  private int limit;
   
   /** Buffer writer to file */
   private FileWriter fw;
   
   /** Temporary file we are writing to */
   private File file;
+  
+  
+  public static void loadConfig()
+  {
+    buffSize = GlobalConfiguration.getBufferSize();
+    
+    GlobalConfiguration.TempFileConfig tfc = GlobalConfiguration.getTempFileConfig();
+    tempFilePath = tfc.Dir;
+    keepFiles = tfc.KeepFiles;
+  }
   
   /**
    * Creates instance of class. Also creates temporary file in temporary catalog.
@@ -30,25 +48,19 @@ public class FileStringBuilder implements Closeable
   public FileStringBuilder() throws IOException
   {
     sb = createEmptyStringBuilder();
-    
-    limit = 8 * 1024 * 1024; // 8 MB as default
-    
-    String buffSize = System.getProperty("buffsize");
-    if (buffSize != null && !buffSize.isEmpty())
-      limit = Integer.parseInt(buffSize);
-    
     setFile();
   }
-  
+
   public void setFile() throws IOException
   {
-    String filePath = System.getProperty("tempfilepath");
-    if (filePath != null && !filePath.isEmpty())
-      file = File.createTempFile("jdts", ".csv", new File(filePath));
+    if (tempFilePath != null && !tempFilePath.isEmpty())
+      file = File.createTempFile("jdts", ".csv", new File(tempFilePath));
     else
       file = File.createTempFile("jdts", ".csv");
     
-    file.deleteOnExit();
+    if (!keepFiles)
+      file.deleteOnExit();
+    
     fw = new FileWriter(file);
   }
   
@@ -70,7 +82,7 @@ public class FileStringBuilder implements Closeable
   {
     sb.append(o);
     
-    if (sb.length() >= limit)
+    if (sb.length() >= buffSize)
       flush();
     
     return this;
@@ -91,7 +103,7 @@ public class FileStringBuilder implements Closeable
   /**
    * Flushes buffer to file when not empty, and closes temporary file.
    */
-  public void close()
+  public synchronized void close()
   {
     try
     {
