@@ -9,6 +9,7 @@ import java.util.Properties;
 import kpp.jdts.csv.FileStringBuilder;
 import kpp.jdts.csv.dialect.Dialect;
 import kpp.jdts.csv.dialect.Dialects;
+import kpp.jtds.GlobalConfiguration;
 import kpp.jtds.core.ExecuteStep;
 import kpp.jtds.core.Logger;
 import kpp.jtds.core.Step;
@@ -18,7 +19,6 @@ import org.w3c.dom.NodeList;
 
 public abstract class Importer
 {
-
   public static final String CP_INTO = "into";
 
   public static final String CP_QUERY = "query";
@@ -33,12 +33,16 @@ public abstract class Importer
   
   protected FileStringBuilder fsb;
   
+  /** Some properties of importer. */
   protected Properties config = new Properties();
 
-  protected Dialect dialect = Dialects.Default;
+  /** Dialect to use when saving data to CSV file. */
+  protected static Dialect dialect = Dialects.Default;
   
+  /** List of nasty column names which should be quoted. */
   protected static HashSet<String> quotedColumns = new HashSet<String>();
   
+  /** Character using for quoting nasty columns, so RMDBs will not complain about it. */
   protected static String quoteColumnChar = "";
 
   /** If there should be last semicolon on each line of CSV? */
@@ -60,7 +64,7 @@ public abstract class Importer
    */
   public int prepare() throws Exception
   {
-    Logger.info("Preparing data. Starting querying table ", config.getProperty(CP_INTO), "... ");
+    Logger.info("Preparing data for table ", config.getProperty(CP_INTO), "... ");
     Dialect dlct = getDialect();
     
     int rows = 0;
@@ -103,7 +107,8 @@ public abstract class Importer
     Logger.info("Preparation data ended. Row count for query: " + rows);
     return rows;
   }
-
+  
+  /** Copy some useful properties from attributes/children/etc. of step XML element. */ 
   public void setPropertiesFromXml(Element element)
   {
     config.setProperty(CP_INTO, element.getAttribute("into"));
@@ -176,12 +181,11 @@ public abstract class Importer
     return dialect;
   }
   
-  public void setDialect(Dialect d)
+  /** Load static common configuration. */
+  public static void loadConfig()
   {
-    if (d == null)
-      d = Dialects.Default;
-    
-    this.dialect = d;
+    dialect = GlobalConfiguration.getCSVDialect();
+    if (dialect == null)
+      dialect = Dialects.Default;
   }
-  
 }

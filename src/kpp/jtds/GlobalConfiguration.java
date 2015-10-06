@@ -22,8 +22,6 @@ public class GlobalConfiguration
   
   private static XPathFactory xp;
 
-  private static Dialect usingDialect;
-  
   /** Init configuration with XML file. */
   public static void init(String xmlFilePath) throws Exception
   {
@@ -108,11 +106,9 @@ public class GlobalConfiguration
     return ret;
   }
   
+  /** Get dialect instance from csv element. When result is null then dialect was not defined in xml file or was defined wrongly. */
   public static Dialect getCSVDialect()
   {
-    if (usingDialect != null)
-      return usingDialect;
-    
     Dialect ret = null;
     try
     {
@@ -122,7 +118,7 @@ public class GlobalConfiguration
         String dialect = csv.getAttribute("dialect");
         if (!dialect.isEmpty())
         {
-          usingDialect = ret = (Dialect) Dialects.class.getDeclaredField(dialect).get(null);
+          ret = (Dialect) Dialects.class.getDeclaredField(dialect).get(null);
           Logger.debug("Using CSV dialect ", ret.getClass().getName());
         }
       }

@@ -18,8 +18,6 @@ public class MySQLImporter extends Importer
   public MySQLImporter(Step step)
   {
     super(step);
-    
-    
   }
   
   /** Return LOAD DATA INFILE query. Query is based on temporary file location and list of columns from source ResultSet. */
