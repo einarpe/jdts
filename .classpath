@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="/logica.libs/ojdbc6.jar"/>
 	<classpathentry kind="lib" path="/logica.libs/ojdbc6dms.jar"/>
 	<classpathentry kind="lib" path="/logica.libs/postgresql-9.1-901.jdbc4.jar"/>
+	<classpathentry kind="lib" path="lib/guava-18.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,9 +1,12 @@
 package kpp.jdts.importer;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Properties;
 
 import kpp.jdts.csv.FileStringBuilder;
@@ -17,6 +20,8 @@ import kpp.jtds.core.Step;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Joiner;
+
 public abstract class Importer
 {
   public static final String CP_INTO = "into";
@@ -29,7 +34,8 @@ public abstract class Importer
   
   protected Step step;
   
-  protected StringBuilder columnsFromResultSet;
+  /** List of columns (or to be precise - aliases) from resulting query. */
+  protected LinkedList<String> columnsFromResultSet;
   
   protected FileStringBuilder fsb;
   
@@ -65,47 +71,58 @@ public abstract class Importer
   public int prepare() throws Exception
   {
     Logger.info("Preparing data for table ", config.getProperty(CP_INTO), "... ");
-    Dialect dlct = getDialect();
     
     int rows = 0;
     try (PreparedStatement stmt = step.getDTS().getSourceConnection().prepareStatement(config.getProperty(CP_QUERY)))
     {
       ResultSet rs = stmt.executeQuery();
       ResultSetMetaData rsmd = rs.getMetaData();
-      int columnCount = rsmd.getColumnCount();
       
-      columnsFromResultSet = new StringBuilder();
-      for (int k = 1; k <= columnCount; k++)
-      {
-        String columnName = quote(rsmd.getColumnLabel(k));
-        columnsFromResultSet.append(columnName);
-        if (k < columnCount)
-          columnsFromResultSet.append(',');
-      }
-      
-      fsb = new FileStringBuilder();
-      while (rs.next())
-      {
-        for (int k = 1; k <= columnCount; k++)
-        {
-          fsb.append(dlct.objectToString(rs.getObject(k), rsmd.getColumnTypeName(k)));
-          if (k == columnCount)
-          {
-            if (appendLastSemicolon)
-              fsb.append(";");
-          }
-          else
-            fsb.append(";");
-        }
-        
-        fsb.append("\r\n");
-        rows++;
-      }
-      fsb.close();
+      readResultSetColumns(rsmd);
+      rows = readFileStringBuilder(rs, rsmd);
     }
     
     Logger.info("Preparation data ended. Row count for query: " + rows);
     return rows;
+  }
+
+  private int readFileStringBuilder(ResultSet rs, ResultSetMetaData rsmd) throws IOException, SQLException, Exception
+  {
+    int rows = 0;
+    int columnCount = rsmd.getColumnCount();
+    Dialect dlct = getDialect();
+    fsb = new FileStringBuilder();
+    
+    while (rs.next())
+    {
+      for (int k = 1; k <= columnCount; k++)
+      {
+        fsb.append(dlct.objectToString(rs.getObject(k), rsmd.getColumnTypeName(k)));
+        if (k == columnCount)
+        {
+          if (appendLastSemicolon)
+            fsb.append(";");
+        }
+        else
+          fsb.append(";");
+      }
+      
+      fsb.append("\r\n");
+      rows++;
+    }
+    fsb.close();
+    return rows;
+  }
+
+  private void readResultSetColumns(ResultSetMetaData rsmd) throws SQLException
+  {
+    int columnCount = rsmd.getColumnCount();
+    columnsFromResultSet = new LinkedList<>();
+    for (int k = 1; k <= columnCount; k++)
+    {
+      String columnName = quote(rsmd.getColumnLabel(k));
+      columnsFromResultSet.add(columnName);
+    }
   }
   
   /** Copy some useful properties from attributes/children/etc. of step XML element. */ 
@@ -179,6 +196,11 @@ public abstract class Importer
   public Dialect getDialect()
   {
     return dialect;
+  }
+  
+  protected String getColumnsFromResultSet()
+  {
+    return Joiner.on(',').join(columnsFromResultSet);
   }
   
   /** Load static common configuration. */

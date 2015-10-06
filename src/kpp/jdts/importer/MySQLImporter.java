@@ -1,7 +1,7 @@
 package kpp.jdts.importer;
 
-import kpp.jdts.csv.dialect.Dialects;
 import kpp.jdts.csv.dialect.Dialect;
+import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.core.Step;
 
 public class MySQLImporter extends Importer
@@ -33,7 +33,7 @@ public class MySQLImporter extends Importer
     
     sb.append("Into Table ").append(config.getProperty(CP_INTO)).append(' ');
     sb.append("Fields Terminated By ';' Enclosed By '' Escaped by '\\\\' Lines Terminated By '\r\n' ");
-    sb.append('(').append(columnsFromResultSet.toString()).append(')');
+    sb.append('(').append(getColumnsFromResultSet()).append(')');
     
     return sb.toString();
   }
