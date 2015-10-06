@@ -21,18 +21,17 @@ import java.util.concurrent.Executor;
 
 public class CSVConnection implements Connection
 {
+  private String fileNamePattern;
 
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException
   {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException
   {
-    // TODO Auto-generated method stub
     return false;
   }
 
@@ -67,35 +66,30 @@ public class CSVConnection implements Connection
   @Override
   public void setAutoCommit(boolean autoCommit) throws SQLException
   {
-    // TODO Auto-generated method stub
 
   }
 
   @Override
   public boolean getAutoCommit() throws SQLException
   {
-    // TODO Auto-generated method stub
-    return false;
+    return true;
   }
 
   @Override
   public void commit() throws SQLException
   {
-    // TODO Auto-generated method stub
 
   }
 
   @Override
   public void rollback() throws SQLException
   {
-    // TODO Auto-generated method stub
 
   }
 
   @Override
   public void close() throws SQLException
   {
-    // TODO Auto-generated method stub
 
   }
 
@@ -398,6 +392,11 @@ public class CSVConnection implements Connection
   {
     // TODO Auto-generated method stub
     return 0;
+  }
+
+  public void setPattern(String fileNamePattern)
+  {
+    this.fileNamePattern = fileNamePattern;
   }
 
 }

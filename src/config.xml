@@ -18,6 +18,8 @@
   
   <config>
     <importer class="kpp.jdts.importer.PostgreSQLImporter" />
+    <buffer size="8388608" />
+    <tempfiles dir="e:\\tmp\\" keep="true" />
   </config>
 
   <steps>

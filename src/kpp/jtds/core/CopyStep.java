@@ -24,13 +24,13 @@ public class CopyStep extends Step
   @Override
   public void execute() throws Exception
   {
-    importer.executeStepExecute(executeBefore); // 
+    importer.executeStepExecute(executeBefore);
     
     int rows = importer.prepare();
     if (rows > 0)
       importer.insert();
     
-    importer.executeStepExecute(executeAfter); // 
+    importer.executeStepExecute(executeAfter);
   }
   
   /**
