@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import kpp.jtds.GlobalConfiguration;
+import kpp.jtds.core.Logger;
 
 /**
  * FileStringBuilder acts like StringBuilder, but it works with files.
@@ -21,6 +22,9 @@ public class FileStringBuilder implements Closeable
   
   /** Do keep files when jdts finishes its job? */
   private static boolean keepFiles = false;
+  
+  /** Pattern of filename. */
+  private static String pattern = "jdts[NOW].csv";
   
   /** Buffer */
   private StringBuilder sb;
@@ -39,6 +43,7 @@ public class FileStringBuilder implements Closeable
     GlobalConfiguration.TempFileConfig tfc = GlobalConfiguration.getTempFileConfig();
     tempFilePath = tfc.Dir;
     keepFiles = tfc.KeepFiles;
+    pattern = tfc.Pattern;
   }
   
   /**
@@ -53,10 +58,7 @@ public class FileStringBuilder implements Closeable
 
   public void setFile() throws IOException
   {
-    if (tempFilePath != null && !tempFilePath.isEmpty())
-      file = File.createTempFile("jdts", ".csv", new File(tempFilePath));
-    else
-      file = File.createTempFile("jdts", ".csv");
+    file = new File(tempFilePath, getFileNameByPattern());
     
     if (!keepFiles)
       file.deleteOnExit();
@@ -64,6 +66,12 @@ public class FileStringBuilder implements Closeable
     fw = new FileWriter(file);
   }
   
+  private String getFileNameByPattern()
+  {
+    return pattern
+        .replace("[NOW]", Long.toString(System.currentTimeMillis()));
+  }
+
   /**
    * Returns handle to a temporary file.
    */
@@ -111,17 +119,14 @@ public class FileStringBuilder implements Closeable
         return;
       
       if (sb.length() > 0)
-      {
         flush();
-        sb = createEmptyStringBuilder();
-      }
       
       fw.close();
       fw = null;
     }
     catch (Exception ex)
     {
-      System.err.println(ex.getMessage());
+      Logger.error(ex.getMessage());
     }
   }
   

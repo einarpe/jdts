@@ -84,6 +84,7 @@ public class GlobalConfiguration
     TempFileConfig ret = new TempFileConfig();
     ret.Dir = System.getProperty("java.io.tmpdir");
     ret.KeepFiles = false;
+    ret.Pattern = "jdts[NOW].csv";
     
     try
     {
@@ -117,6 +118,9 @@ public class GlobalConfiguration
     
     /** Keep temporary files after jdts ends it's job? */
     public boolean KeepFiles;
+
+    /** Pattern of filename. */
+    public String Pattern;
   }
   
   /** Returns XML element defining connection to source database. */
