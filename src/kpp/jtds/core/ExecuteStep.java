@@ -138,7 +138,7 @@ public class ExecuteStep extends Step
   public static void executeList(String[] names) throws Exception
   {
     for (String stepName : names)
-      if (stepsMap.containsKey(stepName))
+      if (stepsMap.containsKey(stepName.toLowerCase().trim()))
         stepsMap.get(stepName).execute(true);
   }
 }

@@ -46,7 +46,7 @@ public class CopyStep extends Step
     result.importer = ImporterFactory.newInstance(result);
     result.importer.setPropertiesFromXml(element);
     
-    Element execute = XmlUtils.getFirst(element, "execute");
+    Element execute = XmlUtils.getFirst(element, "exec");
     if (execute != null)
     {
       result.executeBefore = execute.getAttribute("before").split(",");

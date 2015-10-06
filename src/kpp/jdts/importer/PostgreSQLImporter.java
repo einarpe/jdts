@@ -46,12 +46,10 @@ public class PostgreSQLImporter extends Importer
       {
         byte[] bytes = object.toString().getBytes("windows-1250");
         for (int i = 0; i < bytes.length; i++)
-          if (bytes[i] == 0)
+          if (bytes[i] == 0) // zero bytes are not allowed; replace them with space characters
             bytes[i] = 32;
         
         return String.format("'%s'", new String(bytes)
-          .replace(";", "\\;")
-          .replace("'", "\\'")
           .replace("\\", "\\\\")
           .replace("'", "\\'"));
       }

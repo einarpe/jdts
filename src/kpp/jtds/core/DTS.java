@@ -8,12 +8,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
 import kpp.jtds.GlobalConfiguration;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -39,11 +35,8 @@ public class DTS
    */
   public static DTS createFromXml() throws Exception
   {
-    Document doc = GlobalConfiguration.getXmlDocument();
-    
-    XPathFactory xp = XPathFactory.newInstance();
-    Element connSrc = (Element)xp.newXPath().evaluate("/dts/connections/source", doc.getDocumentElement(), XPathConstants.NODE);
-    Element connDst = (Element)xp.newXPath().evaluate("/dts/connections/destination", doc.getDocumentElement(), XPathConstants.NODE);
+    Element connSrc = GlobalConfiguration.getSourceConnection(); 
+    Element connDst = GlobalConfiguration.getDestinationConnection(); 
     NodeList steps = GlobalConfiguration.getSteps(); 
     
     DTS resultDTS = new DTS();

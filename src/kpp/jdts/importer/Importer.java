@@ -164,7 +164,7 @@ public abstract class Importer
   protected Object obj2str(Object object, String columnType)
   {
     if (object == null)
-      return "\\N"; // szpecjal for mysql
+      return "\\N"; // mysql default null identifier
     
     if (object instanceof String)
       return object.toString().replace("\"", "\\\"").replace(";", "\\;");

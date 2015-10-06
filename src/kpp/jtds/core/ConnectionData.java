@@ -42,11 +42,14 @@ public class ConnectionData
   public static ConnectionData fromXml(Element el) throws ClassNotFoundException
   {
     ConnectionData result = new ConnectionData();
+    
     result.url = el.getAttribute("url");
     result.user = el.getAttribute("user"); 
     result.password = el.getAttribute("password");
     
-    Class.forName(el.getAttribute("driver"));
+    String driver = el.getAttribute("driver");
+    if (!driver.trim().isEmpty())
+      Class.forName(driver);
     
     return result;
   }

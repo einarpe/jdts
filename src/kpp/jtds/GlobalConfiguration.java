@@ -19,7 +19,8 @@ public class GlobalConfiguration
   private static Document document;
   
   private static XPathFactory xp;
-
+  
+  /** Init configuration with XML file. */
   public static void init(String xmlFilePath) throws Exception
   {
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -28,6 +29,7 @@ public class GlobalConfiguration
     xp = XPathFactory.newInstance();
   }
   
+  /** Returns XML element defining importer to use. */
   public static Element getImporterElement()
   {
     try
@@ -41,6 +43,7 @@ public class GlobalConfiguration
     }
   }
   
+  /** Returns XML list defining list of steps to perform. */
   public static NodeList getSteps()
   {
     try
@@ -57,6 +60,7 @@ public class GlobalConfiguration
   /** Default buffer for FileStringBuilder. */
   final static int DEFAULT_BUFFER_SIZE = 8 * 1024 * 1024;
   
+  /** Returns integer defining buffer size. */
   public static int getBufferSize()
   {
     try
@@ -113,6 +117,34 @@ public class GlobalConfiguration
     
     /** Keep temporary files after jdts ends it's job? */
     public boolean KeepFiles;
+  }
+  
+  /** Returns XML element defining connection to source database. */
+  public static Element getSourceConnection()
+  {
+    try
+    {
+      return (Element)xp.newXPath().evaluate("/dts/connections/source", document.getDocumentElement(), XPathConstants.NODE);
+    }
+    catch (XPathExpressionException e)
+    {
+      Logger.error("Source connection definition not found. ", e.getMessage());
+      return null;
+    }
+  }
+  
+  /** Returns XML element defining connection to destination database. */
+  public static Element getDestinationConnection()
+  {
+    try
+    {
+      return (Element)xp.newXPath().evaluate("/dts/connections/destination", document.getDocumentElement(), XPathConstants.NODE);
+    }
+    catch (XPathExpressionException e)
+    {
+      Logger.error("Destination definition not found. ", e.getMessage());
+      return null;
+    }
   }
   
 }
