@@ -26,7 +26,10 @@ public class ImporterFactory
     Logger.debug("Creating importer instance of class ", className);
     
     Class<?> cls = Class.forName(className);
+    
     Importer imp = (Importer)cls.getDeclaredConstructor(Step.class).newInstance(step);
+    imp.setDialect(GlobalConfiguration.getCSVDialect());
+    
     return imp;
   }
   

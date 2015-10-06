@@ -26,18 +26,24 @@
     <importer class="kpp.jdts.importer.PostgreSQLImporter" />
     <tempfiles dir="c:\\temp" keep="false" />
     <buffer size="8388608" />
+    <csv dialect="PostgreSQL" />
   </config>
 
   <steps>
     
-    <exec on="source" name="src_clean_cache">
+    <exec on="source" name="src_clean_cache" defer="false" failonerror="true">
       dbcc freeproccache;
       dbcc dropcleanbuffers;
     </exec>
-  
+    
+    <exec on="destination" name="dst_something" defer="true">
+      select 1;
+    </exec>
+    
     <copy 
       into="common_customer"
       truncate="true">
+      <exec before="dst_something" after="src_clean_cache" />
       <query> 
         select Id,Code,Active,DateFrom,DateTo,ShortName,Name,FatherName,MotherName,FamilyName,BirthDate,CustomerTypeId,CustomerStatusId,FirstName,LastName,StreetCode,HouseNo,LocalNo,CorrespondenceName,CorrespondenceStreetCode,CorrespondenceHouseNo,CorrespondenceLocalNo,Nip,Regon,Pesel,TelephoneNo,TelephoneGsmNo,Fax,Email,DataProcessingConsent,MarketingProcessingConsent 
         from common_customer

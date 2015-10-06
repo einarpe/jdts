@@ -8,6 +8,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import kpp.jdts.csv.dialect.Dialect;
+import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.core.Logger;
 
 import org.w3c.dom.Document;
@@ -19,6 +21,8 @@ public class GlobalConfiguration
   private static Document document;
   
   private static XPathFactory xp;
+
+  private static Dialect usingDialect;
   
   /** Init configuration with XML file. */
   public static void init(String xmlFilePath) throws Exception
@@ -100,6 +104,32 @@ public class GlobalConfiguration
     }
     catch (XPathExpressionException e)
     {
+    }
+    return ret;
+  }
+  
+  public static Dialect getCSVDialect()
+  {
+    if (usingDialect != null)
+      return usingDialect;
+    
+    Dialect ret = null;
+    try
+    {
+      Element csv = (Element)xp.newXPath().evaluate("/dts/config/csv", document.getDocumentElement(), XPathConstants.NODE);
+      if (csv != null)
+      {
+        String dialect = csv.getAttribute("dialect");
+        if (!dialect.isEmpty())
+        {
+          usingDialect = ret = (Dialect) Dialects.class.getDeclaredField(dialect).get(null);
+          Logger.debug("Using CSV dialect ", ret.getClass().getName());
+        }
+      }
+    }
+    catch (Exception e)
+    {
+      Logger.error(e.getMessage());
     }
     return ret;
   }

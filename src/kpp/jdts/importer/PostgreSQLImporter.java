@@ -1,8 +1,7 @@
 package kpp.jdts.importer;
 
-import java.io.UnsupportedEncodingException;
-
-import kpp.jtds.core.Logger;
+import kpp.jdts.csv.dialect.Dialect;
+import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.core.Step;
 
 public class PostgreSQLImporter extends Importer
@@ -39,31 +38,14 @@ public class PostgreSQLImporter extends Importer
   }
   
   @Override
-  protected Object obj2str(Object object, String columnType)
-  {
-    if (object != null && object instanceof String)
-      try
-      {
-        byte[] bytes = object.toString().getBytes("windows-1250");
-        for (int i = 0; i < bytes.length; i++)
-          if (bytes[i] == 0) // zero bytes are not allowed; replace them with space characters
-            bytes[i] = 32;
-        
-        return String.format("'%s'", new String(bytes)
-          .replace("\\", "\\\\")
-          .replace("'", "\\'"));
-      }
-      catch (UnsupportedEncodingException e)
-      {
-        Logger.error(e.getMessage()); 
-      }
-    
-    return super.obj2str(object, columnType);
-  }
-  
-  @Override
   protected String getTruncateQuery()
   {
     return String.format("Truncate Table Only %s", config.getProperty(CP_INTO));
+  }
+
+  @Override
+  public Dialect getDialect()
+  {
+    return Dialects.PostgreSQL;
   }
 }

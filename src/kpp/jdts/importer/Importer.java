@@ -3,25 +3,22 @@ package kpp.jdts.importer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import kpp.jdts.csv.FileStringBuilder;
+import kpp.jdts.csv.dialect.Dialect;
+import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.core.ExecuteStep;
 import kpp.jtds.core.Logger;
 import kpp.jtds.core.Step;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 public abstract class Importer
 {
-  public final static SimpleDateFormat ShortDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-  
-  public final static SimpleDateFormat LongDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-  
+
   public static final String CP_INTO = "into";
 
   public static final String CP_QUERY = "query";
@@ -37,6 +34,8 @@ public abstract class Importer
   protected FileStringBuilder fsb;
   
   protected Properties config = new Properties();
+
+  protected Dialect dialect = Dialects.Default;
   
   protected static HashSet<String> quotedColumns = new HashSet<String>();
   
@@ -62,6 +61,7 @@ public abstract class Importer
   public int prepare() throws Exception
   {
     Logger.info("Preparing data. Starting querying table ", config.getProperty(CP_INTO), "... ");
+    Dialect dlct = getDialect();
     
     int rows = 0;
     try (PreparedStatement stmt = step.getDTS().getSourceConnection().prepareStatement(config.getProperty(CP_QUERY)))
@@ -84,7 +84,7 @@ public abstract class Importer
       {
         for (int k = 1; k <= columnCount; k++)
         {
-          fsb.append(obj2str(rs.getObject(k), rsmd.getColumnTypeName(k)));
+          fsb.append(dlct.objectToString(rs.getObject(k), rsmd.getColumnTypeName(k)));
           if (k == columnCount)
           {
             if (appendLastSemicolon)
@@ -155,29 +155,6 @@ public abstract class Importer
     return String.format("Truncate Table %s", config.getProperty(CP_INTO));
   }
   
-  /**
-   * Convert given object to string readable by MYSQL LOAD DATA INFILE query.
-   * @param object - object to convert
-   * @param columnType - column type from ResultSetMetaData
-   * @return string readable by Mysql CSV reader
-   */
-  protected Object obj2str(Object object, String columnType)
-  {
-    if (object == null)
-      return "\\N"; // mysql default null identifier
-    
-    if (object instanceof String)
-      return object.toString().replace("\"", "\\\"").replace(";", "\\;");
-    
-    if (columnType.equalsIgnoreCase("date"))
-      return ShortDateFormat.format((Date)object);
-    
-    if (columnType.equalsIgnoreCase("datetime"))
-      return LongDateFormat.format((Date)object);
-    
-    return object;
-  }
-  
   protected String quote(String columnName)
   {
     if (quotedColumns.contains(columnName.toLowerCase()))
@@ -193,5 +170,18 @@ public abstract class Importer
   }
   
   protected abstract String getLoadDataInfileQuery();
+  
+  public Dialect getDialect()
+  {
+    return dialect;
+  }
+  
+  public void setDialect(Dialect d)
+  {
+    if (d == null)
+      d = Dialects.Default;
+    
+    this.dialect = d;
+  }
   
 }
