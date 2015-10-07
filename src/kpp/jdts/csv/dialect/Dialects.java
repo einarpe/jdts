@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 
 import kpp.jtds.core.Logger;
 
-public class Dialects
+public class Dialects  
 {
   /** MySQL dialect. */
   public final static Dialect MySQL = new MySqlDialect();
@@ -12,7 +12,7 @@ public class Dialects
   /** PostgreSQL dialect. */
   public final static Dialect PostgreSQL = new PgSqlDialect();
   
-  /** Default which is by default MySQL dialect. */
+  /** Default. It happens to be MySQL dialect. */
   public final static Dialect Default = new MySqlDialect();
   
   private static class MySqlDialect extends Dialect

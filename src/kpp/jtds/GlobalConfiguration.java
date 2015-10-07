@@ -1,6 +1,7 @@
 package kpp.jtds;
 
 import java.io.File;
+import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -10,7 +11,9 @@ import javax.xml.xpath.XPathFactory;
 
 import kpp.jdts.csv.dialect.Dialect;
 import kpp.jdts.csv.dialect.Dialects;
+import kpp.jtds.core.ConnectionData;
 import kpp.jtds.core.Logger;
+import kpp.jtds.core.Step;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -45,18 +48,29 @@ public class GlobalConfiguration
     }
   }
   
-  /** Returns XML list defining list of steps to perform. */
-  public static NodeList getSteps()
+  /** Returns linked list of steps to perform. */
+  public static LinkedList<Step> getSteps()
   {
+    LinkedList<Step> ret = new LinkedList<Step>();
     try
     {
-      return (NodeList)xp.newXPath().evaluate("/dts/steps/*", document.getDocumentElement(), XPathConstants.NODESET);
+      NodeList steps = (NodeList)xp.newXPath().evaluate("/dts/steps/*", document.getDocumentElement(), XPathConstants.NODESET);
+      for (int i = 0, l = steps.getLength(); i < l; i++)
+      {
+        Element step = (Element) steps.item(i);
+        Step stepObject = Step.create(step);
+        ret.add(stepObject);
+      }
     }
     catch (XPathExpressionException e)
     {
-      Logger.error("Steps definitions not found. ", e.getMessage());
-      return null;
+      Logger.error("Steps definitions not found! ", e.getMessage());
     }
+    catch (Exception e)
+    {
+      Logger.error("Error loading steps! ", e.getMessage());
+    }
+    return ret;
   }
   
   /** Default buffer for FileStringBuilder. */
@@ -107,9 +121,9 @@ public class GlobalConfiguration
   }
   
   /** Get dialect instance from csv element. When result is null then dialect was not defined in xml file or was defined wrongly. */
-  public static Dialect getCSVDialect()
+  public static DialectConfig getCSVDialect()
   {
-    Dialect ret = null;
+    DialectConfig ret = new DialectConfig();
     try
     {
       Element csv = (Element)xp.newXPath().evaluate("/dts/config/csv", document.getDocumentElement(), XPathConstants.NODE);
@@ -118,7 +132,7 @@ public class GlobalConfiguration
         String dialect = csv.getAttribute("dialect");
         if (!dialect.isEmpty())
         {
-          ret = (Dialect) Dialects.class.getDeclaredField(dialect).get(null);
+          ret.UsingDialect = (Dialect) Dialects.class.getDeclaredField(dialect).get(null);
           Logger.debug("Using CSV dialect ", ret.getClass().getName());
         }
       }
@@ -128,6 +142,14 @@ public class GlobalConfiguration
       Logger.error(e.getMessage());
     }
     return ret;
+  }
+  
+  public static class DialectConfig
+  {
+    public Dialect UsingDialect;
+    public String QuoteCharacter;
+    public String Delimiter;
+    
   }
   
   /** Get instance of Document interface of XML file passed to program as argument. */
@@ -150,29 +172,41 @@ public class GlobalConfiguration
   }
   
   /** Returns XML element defining connection to source database. */
-  public static Element getSourceConnection()
+  public static ConnectionData getSourceConnection()
   {
     try
     {
-      return (Element)xp.newXPath().evaluate("/dts/connections/source", document.getDocumentElement(), XPathConstants.NODE);
+      Element ele = (Element)xp.newXPath().evaluate("/dts/connections/source", document.getDocumentElement(), XPathConstants.NODE);
+      return ConnectionData.fromXml(ele);
     }
     catch (XPathExpressionException e)
     {
       Logger.error("Source connection definition not found. ", e.getMessage());
       return null;
     }
+    catch (ClassNotFoundException e)
+    {
+      Logger.error("Driver class not found. ", e.getMessage());
+      return null;
+    }
   }
   
   /** Returns XML element defining connection to destination database. */
-  public static Element getDestinationConnection()
+  public static ConnectionData getDestinationConnection()
   {
     try
     {
-      return (Element)xp.newXPath().evaluate("/dts/connections/destination", document.getDocumentElement(), XPathConstants.NODE);
+      Element ele = (Element)xp.newXPath().evaluate("/dts/connections/destination", document.getDocumentElement(), XPathConstants.NODE);
+      return ConnectionData.fromXml(ele);
     }
     catch (XPathExpressionException e)
     {
       Logger.error("Destination definition not found. ", e.getMessage());
+      return null;
+    }
+    catch (ClassNotFoundException e)
+    {
+      Logger.error("Driver class not found. ", e.getMessage());
       return null;
     }
   }

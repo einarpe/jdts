@@ -13,6 +13,7 @@ import kpp.jdts.csv.FileStringBuilder;
 import kpp.jdts.csv.dialect.Dialect;
 import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.GlobalConfiguration;
+import kpp.jtds.GlobalConfiguration.DialectConfig;
 import kpp.jtds.core.ExecuteStep;
 import kpp.jtds.core.Logger;
 import kpp.jtds.core.Step;
@@ -186,7 +187,7 @@ public abstract class Importer
   }
   
   /** Execute one or more execute steps of given name ... */
-  public void executeStepExecute(String[] execNames) throws Exception
+  public void executeStepExecute(Iterable<String> execNames) throws Exception
   {
     ExecuteStep.executeList(execNames);
   }
@@ -206,8 +207,9 @@ public abstract class Importer
   /** Load static common configuration. */
   public static void loadConfig()
   {
-    dialect = GlobalConfiguration.getCSVDialect();
-    if (dialect == null)
-      dialect = Dialects.Default;
+    DialectConfig conf = GlobalConfiguration.getCSVDialect();
+    
+    dialect = (conf.UsingDialect == null) ? Dialects.Default : conf.UsingDialect;  
+    dialect.setConfig(conf);
   }
 }

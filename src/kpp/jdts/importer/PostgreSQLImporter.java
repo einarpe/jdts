@@ -1,6 +1,5 @@
 package kpp.jdts.importer;
 
-import kpp.jdts.csv.dialect.Dialect;
 import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.core.Step;
 
@@ -9,6 +8,7 @@ public class PostgreSQLImporter extends Importer
   static
   {
     appendLastSemicolon = false;
+    dialect = Dialects.PostgreSQL;
   }
   
   public PostgreSQLImporter(Step step)
@@ -43,9 +43,4 @@ public class PostgreSQLImporter extends Importer
     return String.format("Truncate Table Only %s", config.getProperty(CP_INTO));
   }
 
-  @Override
-  public Dialect getDialect()
-  {
-    return Dialects.PostgreSQL;
-  }
 }

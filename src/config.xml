@@ -26,7 +26,8 @@
     <importer class="kpp.jdts.importer.PostgreSQLImporter" />
     <tempfiles dir="c:\\temp" keep="false" />
     <buffer size="8388608" />
-    <csv dialect="PostgreSQL" />
+    <csv 
+      dialect="PostgreSQL" />
   </config>
 
   <steps>

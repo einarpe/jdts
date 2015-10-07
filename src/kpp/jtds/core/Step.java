@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import org.w3c.dom.Element;
 
 /** 
- * Some step to perform on source/destination database... Base class. 
+ * This is base, abstract class for all of steps. 
  */
 public abstract class Step
 {
@@ -13,16 +13,19 @@ public abstract class Step
   /** DTS object and its data, which we are working on */
   protected DTS dts = null;
   
-  protected Step(DTS dts)
+  /** 
+   * Execute this step.
+   * @throws Exception - when something goes wrong 
+   */
+  public abstract void execute() throws Exception;
+  
+  public void setDTS(DTS dts)
   {
     this.dts = dts;
   }
-  
-  /** Execute this step */
-  public abstract void execute() throws Exception;
 
   /** Factory to create step from XML element */
-  public static Step create(Element step, DTS dts) throws Exception
+  public static Step create(Element step) throws Exception
   {
     if (step == null)
       return null;
@@ -30,8 +33,8 @@ public abstract class Step
     String nodeName = step.getNodeName();
     switch (nodeName)
     {
-      case "copy": return CopyStep.create(step, dts);
-      case "exec": return ExecuteStep.create(step, dts);
+      case "copy": return CopyStep.create(step);
+      case "exec": return ExecuteStep.create(step);
     }
     
     throw new Exception("Unrecognized step " + step.getNodeName());
@@ -57,6 +60,7 @@ public abstract class Step
     dts.getSourceConnection().prepareStatement(sqlQuery).execute();
   }
   
+  /** Return DTS linked with this step. */
   public DTS getDTS()
   {
     return dts;

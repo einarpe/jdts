@@ -14,7 +14,7 @@ public class ExecuteStep extends Step
   private static HashMap<String, ExecuteStep> stepsMap = new HashMap<String, ExecuteStep>();
   
   /** Empty step which does nothing. */
-  public final static ExecuteStep Empty = new ExecuteStep(null);
+  public final static ExecuteStep Empty = new ExecuteStep();
   
   /** Name of procedure to execute. */
   private String procedure;
@@ -33,11 +33,6 @@ public class ExecuteStep extends Step
   
   /** Name of this execution command. */
   private String name = "";
-  
-  public ExecuteStep(DTS dts)
-  {
-    super(dts);
-  }
   
   @Override
   public void execute() throws Exception
@@ -114,9 +109,9 @@ public class ExecuteStep extends Step
    * @param dts - DTS object
    * @return created step
    */
-  public static ExecuteStep create(Element el, DTS dts)
+  public static ExecuteStep create(Element el)
   {
-    ExecuteStep result = new ExecuteStep(dts);
+    ExecuteStep result = new ExecuteStep();
     result.procedure = el.getAttribute("procedure");
     result.on = el.getAttribute("on");
     result.query = el.getTextContent();
@@ -135,7 +130,7 @@ public class ExecuteStep extends Step
   }
 
   /** Execute list of given execute steps in given order. */
-  public static void executeList(String[] names) throws Exception
+  public static void executeList(Iterable<String> names) throws Exception
   {
     for (String stepName : names)
       if (stepsMap.containsKey(stepName.toLowerCase().trim()))

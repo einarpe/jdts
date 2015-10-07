@@ -1,6 +1,5 @@
 package kpp.jdts.importer;
 
-import kpp.jdts.csv.dialect.Dialect;
 import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.core.Step;
 
@@ -13,6 +12,8 @@ public class MySQLImporter extends Importer
     quotedColumns.add("order");
     
     quoteColumnChar = "`";
+    
+    dialect = Dialects.MySQL;
   }
   
   public MySQLImporter(Step step)
@@ -38,9 +39,4 @@ public class MySQLImporter extends Importer
     return sb.toString();
   }
 
-  @Override
-  public Dialect getDialect()
-  {
-    return Dialects.MySQL;
-  }
 }

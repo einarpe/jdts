@@ -1,21 +1,27 @@
 package kpp.jtds.core;
 
+import java.util.ArrayList;
+
 import kpp.jdts.importer.Importer;
 import kpp.jdts.importer.ImporterFactory;
 
 import org.w3c.dom.Element;
 
+import com.google.common.base.Splitter;
+
 public class CopyStep extends Step
 { 
+  /** Steps counter. */
   static int number = 0;
   
-  private String[] executeBefore = new String[0];
+  /** What ExecuteStep execute _before_ executing this step. */
+  private Iterable<String> executeBefore = new ArrayList<>();
   
-  private String[] executeAfter = new String[0];
+  /** What ExecuteStep execute _after_ executing this step. */
+  private Iterable<String> executeAfter = new ArrayList<>();
   
-  public CopyStep(DTS dts)
+  public CopyStep()
   {
-    super(dts);
     ++number;
   }
   
@@ -24,13 +30,13 @@ public class CopyStep extends Step
   @Override
   public void execute() throws Exception
   {
-    importer.executeStepExecute(executeBefore); // 
+    importer.executeStepExecute(executeBefore); 
     
     int rows = importer.prepare();
     if (rows > 0)
       importer.insert();
     
-    importer.executeStepExecute(executeAfter); // 
+    importer.executeStepExecute(executeAfter); 
   }
   
   /**
@@ -39,18 +45,17 @@ public class CopyStep extends Step
    * @return 
    * @throws Exception 
    */
-  public static CopyStep create(Element element, DTS dts) throws Exception
+  public static CopyStep create(Element element) throws Exception
   {
-    CopyStep result = new CopyStep(dts);
-    result.dts = dts;
+    CopyStep result = new CopyStep();
     result.importer = ImporterFactory.newInstance(result);
     result.importer.setPropertiesFromXml(element);
     
-    Element execute = XmlUtils.getFirst(element, "exec");
-    if (execute != null)
+    Element exec = XmlUtils.getFirst(element, "exec");
+    if (exec != null)
     {
-      result.executeBefore = execute.getAttribute("before").split(",");
-      result.executeAfter = execute.getAttribute("after").split(",");
+      result.executeBefore = Splitter.on(',').omitEmptyStrings().trimResults().split(exec.getAttribute("before"));
+      result.executeAfter = Splitter.on(',').omitEmptyStrings().trimResults().split(exec.getAttribute("after"));
     }
     return result;
   }

@@ -10,9 +10,6 @@ import java.util.LinkedList;
 
 import kpp.jtds.GlobalConfiguration;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 /**
  * DTS class
  * Responsible for reading configuration from XML file and running it.
@@ -23,7 +20,7 @@ public class DTS
   
   private ConnectionData destination;
   
-  private LinkedList<Step> steps = new LinkedList<>();
+  private LinkedList<Step> steps;
   
   /** Forbidden zone. */
   private DTS() { }
@@ -35,25 +32,24 @@ public class DTS
    */
   public static DTS createFromXml() throws Exception
   {
-    Element connSrc = GlobalConfiguration.getSourceConnection(); 
-    Element connDst = GlobalConfiguration.getDestinationConnection(); 
-    NodeList steps = GlobalConfiguration.getSteps(); 
+    DTS dts = new DTS();
     
-    DTS resultDTS = new DTS();
+    dts.source = GlobalConfiguration.getSourceConnection();
+    dts.destination = GlobalConfiguration.getDestinationConnection();
+    dts.setSteps(GlobalConfiguration.getSteps());
     
-    resultDTS.source = ConnectionData.fromXml(connSrc);
-    resultDTS.destination = ConnectionData.fromXml(connDst);
-    
-    for (int i = 0, l = steps.getLength(); i < l; i++)
-    {
-      Element step = (Element) steps.item(i);
-      Step stepObject = Step.create(step, resultDTS);
-      resultDTS.steps.add(stepObject);
-    }
-    
-    return resultDTS;
+    return dts;
   }
   
+  private void setSteps(LinkedList<Step> stepList)
+  {
+    steps = stepList;
+    for (Step stp : steps)
+    {
+      stp.setDTS(this);
+    }
+  }
+
   /**
    * Let's go!
    * Run all steps and exec functions. 
@@ -61,15 +57,23 @@ public class DTS
    */
   public void run() throws Exception
   {
-    Logger.info("Staring DTS at ", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+    Logger.info("Staring JDTS at ", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
     if (steps.size() == 0)
-      Logger.info("No steps found.");
-    
-    long start = System.currentTimeMillis();
-    for (Step stp : steps)
-      stp.execute();
-    
-    Logger.info("Done in ", new BigDecimal((System.currentTimeMillis() - start) / 1000.0).setScale(2, RoundingMode.HALF_UP).toString(), " s");
+    {
+      Logger.info("No steps found, nothing to do.");
+    }
+    else
+    {
+      long start = System.currentTimeMillis();
+      
+      for (Step stp : steps)
+        stp.execute();
+      
+      long end = System.currentTimeMillis() - start;
+      
+      BigDecimal timeInSeconds = new BigDecimal(end / 1000.0).setScale(2, RoundingMode.HALF_UP);
+      Logger.info("Done in ", timeInSeconds.toString(), " s");
+    }
   }
   
   /** Get connection to source database */
