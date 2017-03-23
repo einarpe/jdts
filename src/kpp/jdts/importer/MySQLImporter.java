@@ -1,12 +1,23 @@
 package kpp.jdts.importer;
 
 import kpp.jdts.csv.dialect.Dialects;
-import kpp.jtds.core.Step;
+import kpp.jtds.core.CopyStep;
+import kpp.jtds.core.DTS;
 
 public class MySQLImporter extends Importer
 {
-  
+
+  public MySQLImporter(DTS dts, CopyStep step)
+  {
+    super(dts, step);
+  }
+
   static
+  {
+    init();
+  }
+
+  private static void init()
   {
     quotedColumns.add("separator");
     quotedColumns.add("order");
@@ -14,11 +25,6 @@ public class MySQLImporter extends Importer
     quoteColumnChar = "`";
     
     dialect = Dialects.MySQL;
-  }
-  
-  public MySQLImporter(Step step)
-  {
-    super(step);
   }
   
   /** Return LOAD DATA INFILE query. Query is based on temporary file location and list of columns from source ResultSet. */
@@ -29,10 +35,11 @@ public class MySQLImporter extends Importer
     String path = fsb.getFile().getAbsolutePath().replace("\\", "\\\\");
     sb.append("Load Data Local Infile '").append(path).append("' ");
     
-    if (!config.getProperty(CP_BEHAVIOUR).isEmpty())
-      sb.append(config.getProperty(CP_BEHAVIOUR)).append(' ');
     
-    sb.append("Into Table ").append(config.getProperty(CP_INTO)).append(' ');
+    if (!step.getBehaviour().isEmpty())
+      sb.append(step.getBehaviour()).append(' ');
+    
+    sb.append("Into Table ").append(step.getInto()).append(' ');
     sb.append("Fields Terminated By ';' Enclosed By '' Escaped by '\\\\' Lines Terminated By '\r\n' ");
     sb.append('(').append(getColumnsFromResultSet()).append(')');
     

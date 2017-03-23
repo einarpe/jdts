@@ -1,6 +1,6 @@
 package kpp.jtds.core;
 
-
+import com.google.common.base.Joiner;
 
 public final class Logger
 {
@@ -13,23 +13,19 @@ public final class Logger
     isDebug = System.getProperty("debug") != null ;
   }
   
-  public static void info(String ... msg)
+  public static void info(Object ... msg)
   {
     log.info(join(msg));
   }
   
-  public static void error(String ... msg)
+  public static void error(Object ... msg)
   {
     log.severe(join(msg));
   }
   
-  private static String join(String[] msg)
+  private static String join(Object[] msg)
   {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < msg.length; i++)
-      sb.append(msg[i]);
-    
-    return sb.toString();
+    return Joiner.on("").join(msg);
   }
 
   public static void debug(String ... msg)

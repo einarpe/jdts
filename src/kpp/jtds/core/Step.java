@@ -9,20 +9,32 @@ import org.w3c.dom.Element;
  */
 public abstract class Step
 {
-  
-  /** DTS object and its data, which we are working on */
-  protected DTS dts = null;
-  
   /** 
    * Execute this step.
    * @throws Exception - when something goes wrong 
    */
-  public abstract void execute() throws Exception;
+  public abstract void execute(DTS dts) throws Exception;
   
-  public void setDTS(DTS dts)
+  /** 
+   * Executes given query on destination database
+   * @param sqlQuery - query to execute
+   * @throws SQLException
+   */
+  public void destinationExecStatement(DTS dts, String sqlQuery) throws SQLException
   {
-    this.dts = dts;
+    dts.getDestConnection().prepareStatement(sqlQuery).execute();
   }
+  
+  /** 
+   * Executes given query on source database
+   * @param sqlQuery - query to execute
+   * @throws SQLException
+   */
+  public void sourceExecStatement(DTS dts, String sqlQuery) throws SQLException
+  {
+    dts.getSourceConnection().prepareStatement(sqlQuery).execute();
+  }
+  
 
   /** Factory to create step from XML element */
   public static Step create(Element step) throws Exception
@@ -38,31 +50,5 @@ public abstract class Step
     }
     
     throw new Exception("Unrecognized step " + step.getNodeName());
-  }
-  
-  /** 
-   * Executes given query on destination database
-   * @param sqlQuery - query to execute
-   * @throws SQLException
-   */
-  public void destinationExecStatement(String sqlQuery) throws SQLException
-  {
-    dts.getDestConnection().prepareStatement(sqlQuery).execute();
-  }
-  
-  /** 
-   * Executes given query on source database
-   * @param sqlQuery - query to execute
-   * @throws SQLException
-   */
-  public void sourceExecStatement(String sqlQuery) throws SQLException
-  {
-    dts.getSourceConnection().prepareStatement(sqlQuery).execute();
-  }
-  
-  /** Return DTS linked with this step. */
-  public DTS getDTS()
-  {
-    return dts;
   }
 }

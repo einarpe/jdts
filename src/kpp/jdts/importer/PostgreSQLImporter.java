@@ -1,19 +1,25 @@
 package kpp.jdts.importer;
 
 import kpp.jdts.csv.dialect.Dialects;
-import kpp.jtds.core.Step;
+import kpp.jtds.core.CopyStep;
+import kpp.jtds.core.DTS;
 
 public class PostgreSQLImporter extends Importer
 {
+  public PostgreSQLImporter(DTS dts, CopyStep step)
+  {
+    super(dts, step);
+  }
+
   static
+  {
+    init();
+  }
+
+  private static void init()
   {
     appendLastSemicolon = false;
     dialect = Dialects.PostgreSQL;
-  }
-  
-  public PostgreSQLImporter(Step step)
-  {
-    super(step);
   }
 
   @Override
@@ -21,7 +27,7 @@ public class PostgreSQLImporter extends Importer
   {
     StringBuilder sb = new StringBuilder();
     
-    sb.append("COPY ").append(config.getProperty(CP_INTO));
+    sb.append("COPY ").append(step.getInto());
     sb.append('(').append(getColumnsFromResultSet()).append(')');
     sb.append(" FROM ");
     
@@ -40,7 +46,7 @@ public class PostgreSQLImporter extends Importer
   @Override
   protected String getTruncateQuery()
   {
-    return String.format("Truncate Table Only %s", config.getProperty(CP_INTO));
+    return String.format("Truncate Table Only %s", step.getInto());
   }
 
 }

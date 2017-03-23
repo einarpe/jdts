@@ -7,36 +7,29 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import kpp.jdts.csv.FileStringBuilder;
 import kpp.jdts.csv.dialect.Dialect;
 import kpp.jdts.csv.dialect.Dialects;
 import kpp.jtds.GlobalConfiguration;
 import kpp.jtds.GlobalConfiguration.DialectConfig;
-import kpp.jtds.core.ExecuteStep;
+import kpp.jtds.core.CopyStep;
+import kpp.jtds.core.DTS;
 import kpp.jtds.core.Logger;
-import kpp.jtds.core.Step;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import com.google.common.base.Joiner;
 
 public abstract class Importer
 {
-  public static final String CP_INTO = "into";
-
-  public static final String CP_QUERY = "query";
-
-  public static final String CP_TRUNCATE = "truncate";
-
-  public static final String CP_BEHAVIOUR = "behaviour";
+  protected DTS dts;
   
-  protected Step step;
+  protected CopyStep step;
   
   /** List of columns (or to be precise - aliases) from resulting query. */
-  protected LinkedList<String> columnsFromResultSet;
+  protected List<String> columnsFromResultSet;
   
   protected FileStringBuilder fsb;
   
@@ -47,7 +40,7 @@ public abstract class Importer
   protected static Dialect dialect = Dialects.Default;
   
   /** List of nasty column names which should be quoted. */
-  protected static HashSet<String> quotedColumns = new HashSet<String>();
+  protected static Set<String> quotedColumns = new HashSet<String>();
   
   /** Character using for quoting nasty columns, so RMDBs will not complain about it. */
   protected static String quoteColumnChar = "";
@@ -55,14 +48,10 @@ public abstract class Importer
   /** If there should be last semicolon on each line of CSV? */
   protected static boolean appendLastSemicolon = true;
   
-  public Importer(Step step)
+  public Importer(DTS dts, CopyStep step)
   {
+    this.dts = dts;
     this.step = step;
-  }
-  
-  public Step getStep()
-  {
-    return step;
   }
   
   /** 
@@ -71,10 +60,10 @@ public abstract class Importer
    */
   public int prepare() throws Exception
   {
-    Logger.info("Preparing data for table ", config.getProperty(CP_INTO), "... ");
+    Logger.info("Preparing data for table ", step.getInto(), "... ");
     
     int rows = 0;
-    try (PreparedStatement stmt = step.getDTS().getSourceConnection().prepareStatement(config.getProperty(CP_QUERY)))
+    try (PreparedStatement stmt = dts.getSourceConnection().prepareStatement(step.getQuery()))
     {
       ResultSet rs = stmt.executeQuery();
       ResultSetMetaData rsmd = rs.getMetaData();
@@ -83,35 +72,40 @@ public abstract class Importer
       rows = readFileStringBuilder(rs, rsmd);
     }
     
-    Logger.info("Preparation data ended. Row count for query: " + rows);
+    Logger.info("Preparation data ended. Row count for query: ", rows);
     return rows;
   }
 
   private int readFileStringBuilder(ResultSet rs, ResultSetMetaData rsmd) throws IOException, SQLException, Exception
   {
     int rows = 0;
-    int columnCount = rsmd.getColumnCount();
-    Dialect dlct = getDialect();
-    fsb = new FileStringBuilder();
-    
-    while (rs.next())
+    int totalColumnCount = rsmd.getColumnCount();
+    Dialect dialect = getDialect();
+    try (FileStringBuilder fsb = new FileStringBuilder())
     {
-      for (int k = 1; k <= columnCount; k++)
+      while (rs.next())
       {
-        fsb.append(dlct.objectToString(rs.getObject(k), rsmd.getColumnTypeName(k)));
-        if (k == columnCount)
+        for (int columnNo = 1; columnNo <= totalColumnCount; columnNo++)
         {
-          if (appendLastSemicolon)
+          fsb.append(
+              dialect.objectToString(
+                  rs.getObject(columnNo), 
+                  rsmd.getColumnTypeName(columnNo)));
+          
+          if (columnNo == totalColumnCount)
+          {
+            if (appendLastSemicolon)
+              fsb.append(";");
+          }
+          else
             fsb.append(";");
         }
-        else
-          fsb.append(";");
+        
+        fsb.append("\r\n");
+        rows++;
       }
-      
-      fsb.append("\r\n");
-      rows++;
+      this.fsb = fsb;
     }
-    fsb.close();
     return rows;
   }
 
@@ -126,22 +120,10 @@ public abstract class Importer
     }
   }
   
-  /** Copy some useful properties from attributes/children/etc. of step XML element. */ 
-  public void setPropertiesFromXml(Element element)
-  {
-    config.setProperty(CP_INTO, element.getAttribute("into"));
-    NodeList queries = element.getElementsByTagName("query");
-    if (queries.getLength() > 0)
-      config.setProperty(CP_QUERY, ((Element)queries.item(0)).getTextContent());
-    
-    config.setProperty(CP_TRUNCATE, element.getAttribute("truncate").equalsIgnoreCase("true") ? "true" : "false");
-    config.setProperty(CP_BEHAVIOUR, element.getAttribute("behaviour"));
-  }
-  
   @Override
   public String toString()
   {
-    return String.format("into=%s ", config.getProperty(CP_INTO));
+    return String.format("into=%s ", step.getInto());
   }
   
   /**
@@ -152,14 +134,13 @@ public abstract class Importer
   public void insert() throws Exception
   {
     String sqlQuery = "";
-    if (Boolean.parseBoolean(config.getProperty(CP_TRUNCATE)))
+    if (step.getTruncate())
     {
       Logger.info("Truncating... "); 
       sqlQuery = getTruncateQuery(); 
       Logger.debug(sqlQuery);
       
-      step.destinationExecStatement(sqlQuery); 
-      
+      dts.executeStatementDestination(sqlQuery);
       Logger.info("Truncating done.");
     }
     
@@ -167,7 +148,7 @@ public abstract class Importer
     sqlQuery = getLoadDataInfileQuery(); 
     Logger.debug(sqlQuery);
     
-    step.destinationExecStatement(sqlQuery);
+    dts.executeStatementDestination(sqlQuery);
     
     Logger.info("Inserting done.");
   }
@@ -175,7 +156,7 @@ public abstract class Importer
   /** Return TRUNCATE TABLE or DELETE FROM query. */
   protected String getTruncateQuery()
   {
-    return String.format("Truncate Table %s", config.getProperty(CP_INTO));
+    return String.format("Truncate Table %s", step.getInto());
   }
   
   protected String quote(String columnName)
@@ -186,11 +167,6 @@ public abstract class Importer
     return columnName;
   }
   
-  /** Execute one or more execute steps of given name ... */
-  public void executeStepExecute(Iterable<String> execNames) throws Exception
-  {
-    ExecuteStep.executeList(execNames);
-  }
   
   protected abstract String getLoadDataInfileQuery();
   

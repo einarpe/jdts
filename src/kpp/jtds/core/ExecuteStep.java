@@ -5,13 +5,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.w3c.dom.Element;
 
 public class ExecuteStep extends Step
 {
   /** Mapping of steps names to their selves. */
-  private static HashMap<String, ExecuteStep> stepsMap = new HashMap<String, ExecuteStep>();
+  private static Map<String, ExecuteStep> stepsMap = new HashMap<>();
   
   /** Empty step which does nothing. */
   public final static ExecuteStep Empty = new ExecuteStep();
@@ -34,10 +35,9 @@ public class ExecuteStep extends Step
   /** Name of this execution command. */
   private String name = "";
   
-  @Override
-  public void execute() throws Exception
+  public void execute(DTS dts) throws Exception
   {
-    execute(false);
+    execute(dts, false);
   }
   
   /**
@@ -45,7 +45,7 @@ public class ExecuteStep extends Step
    * @param ignoreDeferFlag - method called outside main process loop (eg. when calling before/after some copy step).
    * @throws Exception when something bad occurs
    */
-  public void execute(boolean ignoreDeferFlag) throws Exception
+  public void execute(DTS dts, boolean ignoreDeferFlag) throws Exception
   {
     if (this == Empty)
       return;
@@ -100,7 +100,6 @@ public class ExecuteStep extends Step
     {
       cs.execute();
     }
-    
   }
   
   /**
@@ -128,12 +127,9 @@ public class ExecuteStep extends Step
     if (!name.isEmpty())
       stepsMap.put(name, step);
   }
-
-  /** Execute list of given execute steps in given order. */
-  public static void executeList(Iterable<String> names) throws Exception
+  
+  public static ExecuteStep get(String name)
   {
-    for (String stepName : names)
-      if (stepsMap.containsKey(stepName.toLowerCase().trim()))
-        stepsMap.get(stepName).execute(true);
+    return stepsMap.get(name);
   }
 }

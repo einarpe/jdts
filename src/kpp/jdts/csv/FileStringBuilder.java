@@ -111,7 +111,7 @@ public class FileStringBuilder implements Closeable
   /**
    * Flushes buffer to file when not empty, and closes temporary file.
    */
-  public synchronized void close()
+  public void close()
   {
     try
     {

@@ -2,6 +2,7 @@ package kpp.jtds;
 
 import java.io.File;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,14 +35,19 @@ public class GlobalConfiguration
     xp = XPathFactory.newInstance();
   }
   
-  /** Returns XML element defining importer to use. */
+  /** Returns XML element defining importer to use. 
+   * @throws Exception */
   public static Element getImporterElement()
   {
     try
     {
-      return (Element)xp.newXPath().evaluate("/dts/config/importer", document.getDocumentElement(), XPathConstants.NODE);
+      Element importerData = (Element)xp.newXPath().evaluate("/dts/config/importer", document.getDocumentElement(), XPathConstants.NODE);
+      if (importerData == null)
+        throw new Exception("Importer config data not found!");
+      
+      return importerData;
     }
-    catch (XPathExpressionException e)
+    catch (Exception e)
     {
       Logger.error("Importer definition not found. ", e.getMessage());
       return null;
@@ -49,9 +55,9 @@ public class GlobalConfiguration
   }
   
   /** Returns linked list of steps to perform. */
-  public static LinkedList<Step> getSteps()
+  public static List<Step> getSteps()
   {
-    LinkedList<Step> ret = new LinkedList<Step>();
+    List<Step> ret = new LinkedList<Step>();
     try
     {
       NodeList steps = (NodeList)xp.newXPath().evaluate("/dts/steps/*", document.getDocumentElement(), XPathConstants.NODESET);

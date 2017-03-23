@@ -6,8 +6,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.List;
 
+import kpp.jdts.importer.Importer;
+import kpp.jdts.importer.ImporterFactory;
 import kpp.jtds.GlobalConfiguration;
 
 /**
@@ -20,7 +22,7 @@ public class DTS
   
   private ConnectionData destination;
   
-  private LinkedList<Step> steps;
+  private List<Step> steps;
   
   /** Forbidden zone. */
   private DTS() { }
@@ -36,18 +38,9 @@ public class DTS
     
     dts.source = GlobalConfiguration.getSourceConnection();
     dts.destination = GlobalConfiguration.getDestinationConnection();
-    dts.setSteps(GlobalConfiguration.getSteps());
+    dts.steps = GlobalConfiguration.getSteps();
     
     return dts;
-  }
-  
-  private void setSteps(LinkedList<Step> stepList)
-  {
-    steps = stepList;
-    for (Step stp : steps)
-    {
-      stp.setDTS(this);
-    }
   }
 
   /**
@@ -67,13 +60,25 @@ public class DTS
       long start = System.currentTimeMillis();
       
       for (Step stp : steps)
-        stp.execute();
+      {
+        stp.execute(this);
+      }
       
       long end = System.currentTimeMillis() - start;
       
       BigDecimal timeInSeconds = new BigDecimal(end / 1000.0).setScale(2, RoundingMode.HALF_UP);
-      Logger.info("Done in ", timeInSeconds.toString(), " s");
+      Logger.info("Done in ", timeInSeconds, " s");
     }
+  }
+  
+  public void executeStatementDestination(String sqlQuery) throws SQLException
+  {
+    getDestConnection().prepareStatement(sqlQuery).execute();
+  }
+  
+  public void executeStatementSource(String sqlQuery) throws SQLException
+  {
+    getSourceConnection().prepareStatement(sqlQuery).execute();
   }
   
   /** Get connection to source database */
@@ -86,5 +91,20 @@ public class DTS
   public Connection getDestConnection() throws SQLException
   {
     return destination.getConnection();
+  }
+
+  public void executeSteps(List<String> execStepNames) throws Exception
+  {
+    for (String stepName : execStepNames)
+    {
+      ExecuteStep step = ExecuteStep.get(stepName);
+      if (step != null)
+        step.execute(this, true);
+    }
+  }
+  
+  public Importer getImporter(CopyStep copyStep) throws Exception
+  { 
+    return ImporterFactory.newInstance(this, copyStep);
   }
 }
